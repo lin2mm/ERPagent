@@ -15,7 +15,9 @@
 只要填一份 content 就能出一份老板版简报。
 """
 
-from deckkit import Deck, T, L, SW, PAD
+import os
+
+from deckkit import Deck, T, L, SW, PAD, contact_sheet
 
 X3 = 0.62
 FULL = 12.09                      # 内容总宽（0.62 → 12.71）
@@ -270,11 +272,37 @@ ORDER = [slide_cover, slide_bills, slide_three, slide_gifts, slide_money, slide_
          slide_people, slide_notdo, slide_need, slide_budget, slide_steps, slide_accept,
          slide_fit, slide_push, slide_next, slide_cheat]
 
+# 20 分钟面谈版：账单 → 三件事 → 八样好处 → 算账 → 节奏 → 适配 → 下一步 → 速查
+SHORT_IDS = [1, 2, 3, 4, 10, 12, 14, 15]
 
-def build(footer, sections):
-    """sections: 与 ORDER 等长的内容字典列表。"""
+
+def build(footer, sections, short=False):
+    """sections: 与 ORDER 等长的内容字典列表。
+
+    short=True 时只取 SHORT_IDS 这 8 页（20 分钟面谈版）：不带封面，
+    第一页直接是「先说账」—— 见面就进正题。
+    """
     assert len(sections) == len(ORDER), (len(sections), len(ORDER))
+    ids = SHORT_IDS if short else range(len(ORDER))
     d = Deck(footer)
-    for fn, sec in zip(ORDER, sections):
-        fn(d, sec)
+    for i in ids:
+        ORDER[i](d, sections[i])
     return d
+
+
+def emit(d, name, root, sheet_name=None, sheet_title=None, sheet_cols=4):
+    """同时产出 pptx、低分辨率逐页 PNG 与（可选）预览总图。"""
+    out = os.path.join(root, "ppt")
+    os.makedirs(out, exist_ok=True)
+    pptx_path = d.emit(os.path.join(out, name + ".pptx"))
+    paths, probs = d.render("/tmp/prev_" + name, px_per_in=110)
+    if sheet_name:
+        prev = os.path.join(out, "preview")
+        os.makedirs(prev, exist_ok=True)
+        contact_sheet(paths, os.path.join(prev, sheet_name), cols=sheet_cols, title=sheet_title)
+    print("pptx:", pptx_path)
+    print("slides:", len(d.slides))
+    print("ISSUES:" if probs else "no overflow")
+    for p in probs:
+        print("   ", p)
+    return pptx_path, probs

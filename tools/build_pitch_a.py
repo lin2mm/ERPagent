@@ -277,19 +277,14 @@ S.append(dict(
     foot="我们不承诺做不到的事，也不接不合适的项目 —— 这是这套方案最硬的底气。",
     notes="这一页是留给客户的「对内讲稿」。他能不能说服股东和家人，决定这一单能不能成。"))
 
-d = P.build(FOOT, S)
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
-out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ppt")
-os.makedirs(out, exist_ok=True)
-name = "PITCH-01-Roll-Material-MES-Boss-Briefing"
-pptx_path = d.emit(os.path.join(out, name + ".pptx"))
-paths, probs = d.render("/tmp/prev_p1", px_per_in=110)
-prev = os.path.join(out, "preview")
-os.makedirs(prev, exist_ok=True)
-contact_sheet(paths, os.path.join(prev, "PITCH-01-Roll-Material-MES-Preview-16pages.png"), cols=4,
-              title="PITCH-01 卷材制造执行系统 · 老板决策简报")
-print("pptx:", pptx_path)
-print("slides:", len(d.slides))
-print("ISSUES:" if probs else "no overflow")
-for p in probs:
-    print("  ", p)
+# 完整版：16 页
+d = P.build(FOOT, S)
+P.emit(d, "PITCH-01-Roll-Material-MES-Boss-Briefing", ROOT, sheet_name="PITCH-01-Roll-Material-MES-Preview-16pages.png",
+       sheet_title="PITCH-01 卷材制造执行系统 · 老板决策简报（16 页完整版）")
+
+# 20 分钟面谈版：8 页（账单 / 三件事 / 八样好处 / 算账 / 节奏 / 适配 / 下一步 / 速查）
+ds = P.build(FOOT + " · 20 分钟面谈版", S, short=True)
+P.emit(ds, "PITCH-01-Short-Roll-Material-MES", ROOT, sheet_name="PITCH-01-Short-Preview-8pages.png",
+       sheet_title="PITCH-01 卷材制造执行系统 · 20 分钟面谈版（8 页）")

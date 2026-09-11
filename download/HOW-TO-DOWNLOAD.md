@@ -41,6 +41,37 @@ pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf           16 页 · 3.5 MB · 非标�
 
 ---
 
+## 本次新增：两份「20 分钟面谈版」PDF（8 页）
+
+同一套内容，只留最关键的 8 页，适合**约 20 分钟的面谈**（不带封面，翻开第一页就进正题）：
+
+```
+pdf/PITCH-01-Short-Roll-Material-MES.pdf     8 页 · 1.8 MB · 卷材 MES
+pdf/PITCH-02-Short-Custom-Door.pdf           8 页 · 1.8 MB · 非标定制
+```
+
+保留的 8 页（就是 16 页版里的第 02/03/04/05/11/13/15/16 页）：
+
+```
+① 先说账：您每年最贵的四样东西
+② 说到底您买的是三件事
+③ 这套系统给您的八样好处
+④ 算一笔账（算法与口径，不是承诺值）
+⑤ 多久见效：五步推进，每步都能停
+⑥ 什么样的厂适合做、什么不适合
+⑦ 下一步：第一件事怎么开始
+⑧ 一页速查（可拿给股东看）
+```
+
+**和 16 页版的分工**：16 页版是**留底材料**，客户会后自己看；8 页版是**面谈用**，
+一套讲完 20 分钟，现场就能把话说到"下一步做什么"。
+两个版本内容完全一致，不会出现两份材料说法不一样的情况。
+
+可编辑版本（PPTX）：`ppt/PITCH-01-Short-Roll-Material-MES.pptx`、`ppt/PITCH-02-Short-Custom-Door.pptx`。
+逐页图片：`download/PITCH-01-Short-slides-png/`、`download/PITCH-02-Short-slides-png/`，各 8 张。
+
+---
+
 ## 遇到「file format is invalid」怎么办
 
 **根因已找到并修复。** 旧版 PPTX 里有 **18 处高度为 0 的形状**（用作分隔线），
@@ -65,8 +96,10 @@ PowerPoint 能容错显示，但 **Keynote 会直接判定整个文件格式无�
 ### ① PDF（最稳，Keynote 原生支持）
 
 ```
-pdf/PITCH-01-Roll-Material-MES-Boss-Briefing.pdf    16 页   ← 售前说服版
-pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf          16 页   ← 售前说服版
+pdf/PITCH-01-Short-Roll-Material-MES.pdf             8 页   ← 面谈用（20 分钟）
+pdf/PITCH-02-Short-Custom-Door.pdf                   8 页   ← 面谈用（20 分钟）
+pdf/PITCH-01-Roll-Material-MES-Boss-Briefing.pdf    16 页   ← 留底用（完整版）
+pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf          16 页   ← 留底用（完整版）
 pdf/PPT-01.pdf                                      18 页   ← 机制版
 pdf/PPT-02.pdf                                      18 页   ← 机制版
 ```
@@ -77,10 +110,12 @@ pdf/PPT-02.pdf                                      18 页   ← 机制版
 ### ② PPTX（可编辑，已修复兼容性）
 
 ```
-ppt/PITCH-01-Roll-Material-MES-Boss-Briefing.pptx
-ppt/PITCH-02-Custom-Door-Boss-Briefing.pptx
-ppt/PPT-01-Roll-Material-MES-System-Proposal.pptx
-ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx
+ppt/PITCH-01-Short-Roll-Material-MES.pptx             8 页
+ppt/PITCH-02-Short-Custom-Door.pptx                   8 页
+ppt/PITCH-01-Roll-Material-MES-Boss-Briefing.pptx    16 页
+ppt/PITCH-02-Custom-Door-Boss-Briefing.pptx          16 页
+ppt/PPT-01-Roll-Material-MES-System-Proposal.pptx    18 页
+ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx 18 页
 ```
 
 用 Keynote 打开：**文件 → 打开 → 选择 pptx**。
@@ -92,10 +127,12 @@ ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx
 ### ③ 逐页 PNG（绝对保险）
 
 ```
-download/PITCH-01-slides-png/    16 张
-download/PITCH-02-slides-png/    16 张
-download/PPT-01-slides-png/      18 张
-download/PPT-02-slides-png/      18 张
+download/PITCH-01-Short-slides-png/    8 张
+download/PITCH-02-Short-slides-png/    8 张
+download/PITCH-01-slides-png/         16 张
+download/PITCH-02-slides-png/         16 张
+download/PPT-01-slides-png/           18 张
+download/PPT-02-slides-png/           18 张
 ```
 
 每页一张 200 dpi 的图片，任何设备都能打开，适合发微信 / 贴进文档。
@@ -105,7 +142,7 @@ download/PPT-02-slides-png/      18 张
 ## 全部材料打包
 
 ```
-download/ALL-MATERIALS.zip     共 101 个文件，约 32 MB
+download/ALL-MATERIALS.zip     共 123 个文件，约 38 MB
 ```
 
 含：4 份 PPTX + 4 份 PDF + 4 张预览总图 + 68 张逐页 PNG
@@ -116,7 +153,11 @@ download/ALL-MATERIALS.zip     共 101 个文件，约 32 MB
 ## 直链（GitHub，公开仓库不需登录）
 
 ```
-# 售前说服版 PDF（先看这两份）
+# 20 分钟面谈版 PDF（现场用这两份）
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/PITCH-01-Short-Roll-Material-MES.pdf
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/PITCH-02-Short-Custom-Door.pdf
+
+# 售前说服版 PDF（留底、会后发给客户）
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/PITCH-01-Roll-Material-MES-Boss-Briefing.pdf
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf
 

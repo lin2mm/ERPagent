@@ -57,6 +57,11 @@
 
 PDF 与可编辑 PPTX 同时提供（`ppt/PITCH-0x-*.pptx`），逐页 PNG 在 `download/PITCH-0x-slides-png/`。
 
+**另出 8 页「20 分钟面谈版」**（`pdf/PITCH-01-Short-Roll-Material-MES.pdf`、`pdf/PITCH-02-Short-Custom-Door.pdf`）：
+只留 16 页版的第 02/03/04/05/11/13/15/16 页 —— 账单 → 三件事 → 八样好处 → 算账 → 节奏 → 适配 → 下一步 → 速查，
+不带封面，翻开第一页就进正题。职责分工：**16 页版留底（会后发给客户），8 页版现场讲（20 分钟一套走完）**。
+两个版本内容完全一致，不会出现说法不一。
+
 ---
 
 ## 仓库结构
@@ -85,8 +90,8 @@ spec/          机器可读规格
 ├─ gates.yaml      硬闸门清单（含类型、规则、出路、放行权限、留痕）
 └─ entities.yaml   主线对象 / 五层单据 / 状态机 / 事件 / 枚举 / 集成 / 可靠性
 
-ppt/           四份成品 PPT（机制版 18 页 ×2 + 老板版 16 页 ×2）+ 预览总图
-pdf/           四份 PDF（PPT-01/02 机制版、PITCH-01/02 老板版，Keynote 原生可开）
+ppt/           六份成品 PPT（机制版 18 页 ×2 + 老板版 16 页 ×2 + 面谈版 8 页 ×2）+ 预览总图
+pdf/           六份 PDF（机制版、老板版、面谈版；Keynote 原生可开）
 review/        两轮评分报告
 ├─ 01-Source-Materials-Score.md   两份原方案按 7 维 100 分量表评分 + 转用价值评估
 └─ 02-PPT-Score.md     两份 PPT 评分 + 与原方案逐维对照
@@ -95,10 +100,10 @@ tools/         生成与校验工具
 ├─ deckkit.py        声明式 PPTX 生成 + 预览渲染 + 溢出/越界检测 + Keynote 兼容自检
 ├─ build_deck_a.py   构建 PPT-01（机制版 · 案例 A）
 ├─ build_deck_b.py   构建 PPT-02（机制版 · 案例 B）
-├─ pitch_deck.py     老板决策简报共用版式（16 页骨架，换客户只换内容）
-├─ build_pitch_a.py  构建 PITCH-01（说服版 · 案例 A）
-├─ build_pitch_b.py  构建 PITCH-02（说服版 · 案例 B）
-└─ build_pdf.py      由同一份定义产出 PDF 与逐页 PNG
+├─ pitch_deck.py     老板决策简报共用版式（16 页骨架 + SHORT_IDS 8 页面谈版）
+├─ build_pitch_a.py  构建 PITCH-01（说服版 + 面谈版 · 案例 A）
+├─ build_pitch_b.py  构建 PITCH-02（说服版 + 面谈版 · 案例 B）
+└─ build_pdf.py      由同一份定义产出 PDF 与逐页 PNG（pitch | short | deck）
 ```
 
 ---
