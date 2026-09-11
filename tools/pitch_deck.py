@@ -134,6 +134,56 @@ def slide_gifts(d, c):
                [L(body, size=10.0, color=T["body"])])
 
 
+# ─────────────────────── 系统实景（原文档架构图 / 界面图） ───────────────────────
+IMG_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+
+
+def _img(rel):
+    return os.path.join(IMG_ROOT, rel)
+
+
+def _figure(d, s, rel, x, y, w, h, title, body, cap_h=1.06, pad=0.14):
+    """一张「插图卡」：白底细框 + 等比缩放居中 + 底部分隔线 + 图注。"""
+    d.rect(s, x, y, w, h, fill=T["white"], line=T["line"], radius=0.10)
+    d.image(s, x + pad, y + 0.12, w - 2 * pad, h - cap_h - 0.30, _img(rel))
+    ty = y + h - cap_h - 0.06
+    d.hline(s, x + pad, ty - 0.09, w - 2 * pad, T["line"], 1.0)
+    d.text(s, x + 0.20, ty, w - 0.40, cap_h,
+           [L(title, size=11.6, bold=True, color=T["ink"]),
+            L(body, size=9.8, color=T["muted"], space=3)])
+
+
+def slide_system_one(d, c):
+    """大图一页：左边一张主图，右边「图注 + 三个要点」。"""
+    s = d.slide(kicker=c["kicker"], title=c["title"], sub=c["sub"], notes=c["notes"])
+    rel, cap_t, cap_b = c["figure"]
+    fw, fh = 7.30, 4.72
+    d.rect(s, X3, 2.02, fw, fh, fill=T["white"], line=T["line"], radius=0.10)
+    d.image(s, X3 + 0.14, 2.14, fw - 0.28, fh - 0.26, _img(rel))
+    rx = X3 + fw + 0.24
+    rw = FULL - fw - 0.24
+    d.card(s, rx, 2.02, rw, 1.20, title=cap_t, fill=T["accent_l"], accent=T["accent"],
+           title_size=11.6, body_size=10.0, lines=[L(cap_b, size=10.0, color=T["ink"])])
+    y = 2.02 + 1.20 + 0.14
+    for t, b in c["points"]:
+        d.card(s, rx, y, rw, 1.06, title=t, fill=T["soft"], accent=T["ink"],
+               title_size=11.4, body_size=9.8, lines=[L(b, size=9.8, color=T["body"])])
+        y += 1.06 + 0.14
+
+
+def slide_system_two(d, c):
+    """双图一页：左右各一张插图卡（各带图注）。"""
+    s = d.slide(kicker=c["kicker"], title=c["title"], sub=c["sub"], notes=c["notes"])
+    w = (FULL - 0.37) / 2
+    for i, (rel, cap_t, cap_b) in enumerate(c["figures"]):
+        _figure(d, s, rel, X3 + i * (w + 0.37), 2.02, w, 4.72, cap_t, cap_b)
+
+
+def slide_system_two_b(d, c):
+    """双图一页（第三页复用同一版式，便于按需增删）。"""
+    slide_system_two(d, c)
+
+
 def slide_money(d, c):
     s = d.slide(kicker=c["kicker"], title=c["title"], sub=c["sub"], notes=c["notes"])
     d.table(s, X3, 2.06, FULL, c["rows"], [0.22, 0.36, 0.42],
@@ -268,24 +318,29 @@ def slide_cheat(d, c):
            [L(c["foot"], size=10.6, bold=True, color="8FA3BF")])
 
 
-ORDER = [slide_cover, slide_bills, slide_three, slide_gifts, slide_money, slide_fears,
+ORDER = [slide_cover, slide_bills, slide_three, slide_gifts, slide_system_one,
+         slide_system_two, slide_system_two_b, slide_money, slide_fears,
          slide_people, slide_notdo, slide_need, slide_budget, slide_steps, slide_accept,
          slide_fit, slide_push, slide_next, slide_cheat]
 
-# 20 分钟面谈版：账单 → 三件事 → 八样好处 → 算账 → 节奏 → 适配 → 下一步 → 速查
-SHORT_IDS = [1, 2, 3, 4, 10, 12, 14, 15]
+# 20 分钟面谈版（8 页，按功能名挑选，与页码无关）：
+# 账单 → 三件事 → 八样好处 → 算账 → 节奏 → 适配 → 下一步 → 速查
+SHORT_FN = [slide_bills, slide_three, slide_gifts, slide_money,
+            slide_steps, slide_fit, slide_next, slide_cheat]
 
 
 def build(footer, sections, short=False):
-    """sections: 与 ORDER 等长的内容字典列表。
+    """sections: 与 ORDER 等长的内容字典列表；某页填 None 表示该案例不出这一页。
 
-    short=True 时只取 SHORT_IDS 这 8 页（20 分钟面谈版）：不带封面，
+    short=True 时只取 SHORT_FN 这 8 页（20 分钟面谈版）：不带封面，
     第一页直接是「先说账」—— 见面就进正题。
     """
     assert len(sections) == len(ORDER), (len(sections), len(ORDER))
-    ids = SHORT_IDS if short else range(len(ORDER))
+    ids = [ORDER.index(fn) for fn in SHORT_FN] if short else list(range(len(ORDER)))
     d = Deck(footer)
     for i in ids:
+        if sections[i] is None:          # 该案例暂缺这一页（例如原文档没有可用图）
+            continue
         ORDER[i](d, sections[i])
     return d
 

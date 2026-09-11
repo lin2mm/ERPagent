@@ -2,14 +2,61 @@
 
 ---
 
-## 本次新增：两份「老板决策简报」PDF（售前说服版）
+## 本次新增 ①：目标企业名单 Excel 版（可直接筛选 / 排序 / 打印）
 
-用来**提高成交率**的两份 PDF，各 16 页。它们和原来的方案讲的是同一件事，
+```text
+prospects/Target-Companies.xlsx
+```
+
+一张工作簿、三张表：
+
+| 工作表 | 里面是什么 |
+| --- | --- |
+| **名单** | 28 家企业 · 14 列：优先级 / 企业名称 / 省·市 / 网址 / 行业细分 / 主营业务 / 适配案例 / 初筛分 / 匹配点（成功面）/ 风险点（失败面·待核实）/ 建议切入点 / 接触路径 / 可靠度。已冻结表头、开好筛选、按 A4 横向排好版，可直接打印 |
+| **评分口径** | 企业侧 E1–E7（35 分）与老板侧 B1–B7（35 分）的打分标准、S/A/B/C 定级线、两条修正规则，以及「初筛分为什么不满分」 |
+| **使用说明与获客渠道** | 三步用法（10 分钟桌面核实 → 3 个探路电话 → 五步阶梯）+ 四种持续获客渠道（招标中标名单 / 产业带集群 / 展会 / 招聘信号）+ 免责与保密说明 |
+
+CSV 原样保留（`prospects/Target-Companies.csv`，脚本与系统的通用格式）；Excel 由它生成，
+表里的数字与 CSV 完全一致。
+
+---
+
+## 本次新增 ②：老板版简报插入「系统实景」（原文档的图，已去掉公司名）
+
+您要的：**把原文档里的系统截图插进之前那两份老板版 PPT / PDF，但图里的公司名要去掉。**
+
+- **案例 B（非标定制）老板版**：原方案文档里有 5 张架构图，已全部插入，新增第 **05 / 06 / 07** 三页：
+
+  | 新页 | 插了什么 | 一句话说明 |
+  | --- | --- | --- |
+  | 05 | 总体架构（五层） | 八个入口 → 一条业务流 → 能力中台 → 车间边缘节点 → 设备与 IoT |
+  | 06 | 一码到底 + 两段拆单 | 一个解决「查得到」，一个解决「交期 40 → 25 天」 |
+  | 07 | 角色 × 菜单权限 + 八周冲刺 | 一个回答"谁会看到什么"，一个回答"多久看到东西" |
+
+  这一份因此从 16 页变成 **19 页**（封面 + 正文 + 速查，页码自动重排）。
+
+- **公司名怎么去的**：原图标题写的是"××门业智能制造一体化系统 · 总体架构"，
+  现在用**同色同字号**替换为"非标门智能制造一体化系统 · 总体架构" —— 不是打码、
+  不是马赛克，版面看不出动过；**图里的流程、角色、菜单、权限矩阵、说明文字全部保留**。
+  处理过程写在 `tools/redact_source_images.py` 里，可复查、可复现。
+
+- **案例 A（卷材 MES）老板版**：原始手册（132 页操作手册）里有约 **99 张真实的系统界面截图**，
+  但当初只保留了手册里的**文字**，PDF 本身不在本地 —— 所以这一份暂时还是 16 页。
+  **请把那份手册 PDF 再发我一次**（拖进对话即可），我按同样的版式把界面截图插进去，
+  并同样处理掉企业标识。版式位置已经留好，拿到文件当天就能出。
+
+- 本次没有动：机制版（18 页 ×2）、8 页 20 分钟面谈版 ×2（这两份刻意保持轻，不放图）。
+
+---
+
+## 两份「老板决策简报」PDF（售前说服版）
+
+用来**提高成交率**的两份 PDF。它们和原来的方案讲的是同一件事，
 但换了讲法：原来讲"系统长什么样"，现在讲"老板为什么要买、您能得到什么、要出什么"。
 
 ```
 pdf/PITCH-01-Roll-Material-MES-Boss-Briefing.pdf     16 页 · 3.5 MB · 卷材 MES
-pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf           16 页 · 3.5 MB · 非标定制
+pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf           19 页 · 4.3 MB · 非标定制（含 3 页系统实景）
 ```
 
 **16 页的顺序就是谈话的顺序**（每页都在 PPTX 备注里附了讲法）：
@@ -193,11 +240,11 @@ download/PPT-02-slides-png/           18 张
 ## 全部材料打包
 
 ```
-download/ALL-MATERIALS.zip     共 127 个文件，约 39 MB
+download/ALL-MATERIALS.zip     共 136 个文件，约 42 MB
 ```
 
-含：4 份 PPTX + 4 份 PDF + 4 张预览总图 + 68 张逐页 PNG
-+ 8 份文档 + 7 份模板 + 3 份规格 + 2 份评分报告 + README + 本下载指引。
+含：6 份 PPTX + 7 份 PDF + 6 张预览总图 + 87 张逐页 PNG + 5 张已脱敏插图
++ 9 份文档 + 7 份模板 + 3 份规格 + 2 份评分报告 + 名单 CSV / Excel + README + 本下载指引。
 
 ---
 
@@ -226,8 +273,9 @@ https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PPT-02-Custom
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/CHECKLIST-Customer-Screening.pdf
 
 # 目标企业名单（28 家初筛）
-https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/docs/08-Prospect-Shortlist.md
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/prospects/Target-Companies.xlsx
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/prospects/Target-Companies.csv
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/docs/08-Prospect-Shortlist.md
 
 # 全部材料
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/download/ALL-MATERIALS.zip

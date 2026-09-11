@@ -150,6 +150,15 @@ class Deck:
         self.text(s, x + 0.08, y + h - 0.46, w - 0.16, 0.40,
                   [L(label, size=9.6, color=T["muted"], align="c")])
 
+    def image(self, s, x, y, w, h, path, frame=False, pad=0.0):
+        """在 (x,y,w,h) 框内等比缩放居中放一张图（不裁切、不变形）。
+
+        frame=True 时画一圈浅色边框 + 白底，像一张「插图卡」。
+        """
+        s.els.append({"k": "image", "x": x, "y": y, "w": w, "h": h,
+                      "path": path, "frame": frame, "pad": pad})
+        return s.els[-1]
+
     # ---------- 输出 ----------
     def emit(self, path):
         prs = Presentation()
@@ -235,6 +244,14 @@ class Deck:
             sh.shadow.inherit = False
         elif k == "table":
             _table_pptx(sl, e)
+        elif k == "image":
+            fx, fy, fw, fh = _fit_image(e["path"], e["x"], e["y"], e["w"], e["h"],
+                                        e.get("pad", 0.0))
+            if e.get("frame"):
+                _rp(sl, e["x"], e["y"], e["w"], e["h"], fill=T["white"],
+                    line=T["line"], radius=0.08)
+            sl.shapes.add_picture(e["path"], Inches(fx), Inches(fy),
+                                  Inches(fw), Inches(fh))
 
     def render(self, outdir, px_per_in=110):
         _ensure_dir(outdir)
@@ -282,7 +299,10 @@ class Deck:
                   [L(f"{idx + 1:02d}", size=9, bold=True, color=fc, align="r")],
                   font, px_per_in)
             for e in s.els:
-                prob = _el_pil(d, e, font, px_per_in, W, H)
+                if e["k"] == "image":
+                    prob = _el_pil_image(img, d, e, px_per_in)
+                else:
+                    prob = _el_pil(d, e, font, px_per_in, W, H)
                 if prob:
                     problems.append(f"slide {idx+1}: {prob}")
                 # 越界检查：任何元素不得越过脚注区（6.90in）或右/下边界
@@ -554,6 +574,32 @@ def _el_pil(d, e, font, ppi, W, H):
     elif k == "table":
         _table_pil(d, e, font, ppi)
     return None
+
+
+def _el_pil_image(img, d, e, ppi):
+    """渲染期处理图片元素（需要拿到画布本身，所以不走 _el_pil）。"""
+    from PIL import Image
+    px = lambda v: int(v * ppi)
+    fx, fy, fw, fh = _fit_image(e["path"], e["x"], e["y"], e["w"], e["h"],
+                                e.get("pad", 0.0))
+    if e.get("frame"):
+        d.rounded_rectangle([px(e["x"]), px(e["y"]), px(e["x"] + e["w"]),
+                             px(e["y"] + e["h"])], radius=px(0.08),
+                            fill="#FFFFFF", outline="#" + T["line"], width=1)
+    im = Image.open(e["path"]).convert("RGB")
+    im = im.resize((max(1, px(fw)), max(1, px(fh))), Image.LANCZOS)
+    img.paste(im, (px(fx), px(fy)))
+    return None
+
+
+def _fit_image(path, x, y, w, h, pad=0.0):
+    """等比缩放到 (x,y,w,h) 框内并居中，返回实际几何（英寸）。"""
+    from PIL import Image
+    iw, ih = Image.open(path).size
+    aw, ah = max(0.01, w - 2 * pad), max(0.01, h - 2 * pad)
+    sc = min(aw / iw, ah / ih)
+    fw, fh = iw * sc, ih * sc
+    return x + (w - fw) / 2, y + (h - fh) / 2, fw, fh
 
 
 def _table_pil(d, e, font, ppi):

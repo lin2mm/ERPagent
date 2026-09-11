@@ -84,7 +84,13 @@ S.append(dict(
     notes="八样里前六样直接对应钱，后两样对应「不出事」。讲的时候按客户最痛的那一条展开，"
           "不要八条平均用力 —— 平均用力等于没有重点。"))
 
-# 05 算账
+# 05-07 系统实景：案例 A 待补 —— 原始手册（132 页操作手册）里约有 99 张真实界面截图，
+# 手册文件不在本地（当初只保留了文字），拿到原始文件后按同样版式补齐这三页。
+S.append(None)
+S.append(None)
+S.append(None)
+
+# 08 算账
 S.append(dict(
     kicker="四 · 算账",
     title="算一笔账：投入靠什么赚回来",
@@ -281,8 +287,8 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
 # 完整版：16 页
 d = P.build(FOOT, S)
-P.emit(d, "PITCH-01-Roll-Material-MES-Boss-Briefing", ROOT, sheet_name="PITCH-01-Roll-Material-MES-Preview-16pages.png",
-       sheet_title="PITCH-01 卷材制造执行系统 · 老板决策简报（16 页完整版）")
+P.emit(d, "PITCH-01-Roll-Material-MES-Boss-Briefing", ROOT, sheet_name="PITCH-01-Roll-Material-MES-Preview.png",
+       sheet_title=f"PITCH-01 卷材制造执行系统 · 老板决策简报（{len(d.slides)} 页完整版）")
 
 # 20 分钟面谈版：8 页（账单 / 三件事 / 八样好处 / 算账 / 节奏 / 适配 / 下一步 / 速查）
 ds = P.build(FOOT + " · 20 分钟面谈版", S, short=True)
