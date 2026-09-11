@@ -72,6 +72,34 @@ pdf/PITCH-02-Short-Custom-Door.pdf           8 页 · 1.8 MB · 非标定制
 
 ---
 
+## 本次新增：目标客户筛选清单（A4 打印版）
+
+一份**可打印、可填写**的售前筛选打分表，用来决定在一家客户身上投多少售前资源：
+
+```
+pdf/CHECKLIST-Customer-Screening.pdf     A4 两页 · 720 KB · 直接打印
+templates/07-Customer-Qualification-Checklist.md    可编辑版（Markdown）
+```
+
+七步走完一张表：
+
+```
+第 0 步  一票否决（6 条，任一不过直接放弃）
+第 1 步  企业侧打分（7 项 × 0–5 分 = 35 分）
+第 2 步  老板侧打分（7 项 × 0–5 分 = 35 分）
+第 3 步  负面清单（10 条，带 ★ 的直接放弃）
+第 4 步  定级与打法（S / A / B / C 四级 + 两条修正规则）
+第 5 步  见面必问的 12 个问题
+第 6 步  走车间 30 分钟看 8 个信号
+第 7 步  结论记录（当场写下定级与下一步）
+```
+
+**用法**：每接触一家企业填一份，10 分钟填完。核心是两条 ——
+企业侧与老板侧**同权**（企业好但老板不动，项目必败），以及
+**B1「老板愿不愿意亲自下场」是最强的单一预测因子**。
+
+---
+
 ## 遇到「file format is invalid」怎么办
 
 **根因已找到并修复。** 旧版 PPTX 里有 **18 处高度为 0 的形状**（用作分隔线），
@@ -142,11 +170,11 @@ download/PPT-02-slides-png/           18 张
 ## 全部材料打包
 
 ```
-download/ALL-MATERIALS.zip     共 123 个文件，约 38 MB
+download/ALL-MATERIALS.zip     共 125 个文件，约 39 MB
 ```
 
 含：4 份 PPTX + 4 份 PDF + 4 张预览总图 + 68 张逐页 PNG
-+ 8 份文档 + 6 份模板 + 3 份规格 + 2 份评分报告 + README + 本下载指引。
++ 8 份文档 + 7 份模板 + 3 份规格 + 2 份评分报告 + README + 本下载指引。
 
 ---
 
@@ -170,6 +198,9 @@ https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PITCH-01-Roll
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PITCH-02-Custom-Door-Boss-Briefing.pptx
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PPT-01-Roll-Material-MES-System-Proposal.pptx
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx
+
+# 目标客户筛选清单（A4 打印版）
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/CHECKLIST-Customer-Screening.pdf
 
 # 全部材料
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/download/ALL-MATERIALS.zip
