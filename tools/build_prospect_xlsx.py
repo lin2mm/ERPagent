@@ -14,6 +14,7 @@ CSV 是唯一数据源：改名单改 CSV，重跑本脚本即可。
 """
 import csv
 import os
+import re
 
 import xlsxwriter
 
@@ -72,11 +73,17 @@ def sheet_list(wb, f, rows):
             elif c == 1:
                 cell = f["adv"]
             elif c == 5 and val.startswith("http"):
-                cell = f["link"]
+                ws.write_url(r, c, val, f["link"], val)      # 官网可点
+                continue
             elif c in CENTER_COLS:
                 cell = f["num"]
             else:
                 cell = f["cell"]
+            if c == 9:                                        # 邮箱可点（整格只放一个邮箱时）
+                one = re.fullmatch(r"[\w.+-]+@[\w-]+\.[\w.]+", val.strip())
+                if one:
+                    ws.write_url(r, c, "mailto:" + val.strip(), f["link"], val.strip())
+                    continue
             ws.write(r, c, val, cell)
         ws.set_row(r, 96)
     ws.freeze_panes(1, 3)
