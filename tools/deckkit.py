@@ -329,16 +329,31 @@ def _rp(sl, x, y, w, h, fill=None, line=None, lw=1.0, radius=0.10):
 
 
 def _ln(sl, x, y, w, color, lw=1.0):
-    sh = sl.shapes.add_connector(1, Inches(x), Inches(y), Inches(x + w), Inches(y))
-    sh.line.color.rgb = RGBColor.from_string(color)
-    sh.line.width = Pt(lw)
+    """水平分隔线。
+
+    注意：这里刻意不用 add_connector —— 连接线在水平方向时 cy=0，
+    属于 zero-extent 形状。PowerPoint 容错，但 Keynote 会判定整个文件
+    「file format is invalid」。改用极细矩形，兼容性最好。
+    """
+    h = max(0.012, lw / 72.0)
+    sh = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y - h / 2),
+                             Inches(w), Inches(h))
+    sh.fill.solid()
+    sh.fill.fore_color.rgb = RGBColor.from_string(color)
+    sh.line.fill.background()
+    sh.shadow.inherit = False
     return sh
 
 
 def _lnv(sl, x, y, h, color, lw=1.0):
-    sh = sl.shapes.add_connector(1, Inches(x), Inches(y), Inches(x), Inches(y + h))
-    sh.line.color.rgb = RGBColor.from_string(color)
-    sh.line.width = Pt(lw)
+    """垂直分隔线（同理：不用连接线）。"""
+    w = max(0.012, lw / 72.0)
+    sh = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x - w / 2), Inches(y),
+                             Inches(w), Inches(h))
+    sh.fill.solid()
+    sh.fill.fore_color.rgb = RGBColor.from_string(color)
+    sh.line.fill.background()
+    sh.shadow.inherit = False
     return sh
 
 
@@ -593,3 +608,34 @@ def contact_sheet(paths, out, cols=4, title=None):
         d.rectangle([x - 1, y - 1, x + tw, y + th], outline="#C6CFDC", width=1)
     sheet.save(out)
     return out
+
+
+# ─────────────────── 兼容性体检（Keynote 尤其挑剔） ───────────────────
+def audit_pptx(path):
+    """检查 import 兼容性风险，返回问题列表。
+
+    Keynote 对以下情况会直接报 "file format is invalid"：
+      · zero-extent 形状（cx=0 或 cy=0）—— 最常见
+      · p:cxnSp 连接线
+      · 空文本 run
+      · rPr 子元素顺序错误
+    """
+    import zipfile, re
+    problems = []
+    z = zipfile.ZipFile(path)
+    slides = [n for n in z.namelist() if n.startswith("ppt/slides/slide")]
+    zero = conn = emptyt = 0
+    for n in slides:
+        x = z.read(n).decode("utf-8")
+        for m in re.finditer(r'<a:ext cx="(-?\d+)" cy="(-?\d+)"/>', x):
+            if int(m.group(1)) <= 0 or int(m.group(2)) <= 0:
+                zero += 1
+        conn += x.count("<p:cxnSp>")
+        emptyt += len(re.findall(r'<a:t>\s*</a:t>', x))
+    if zero:
+        problems.append(f"zero-extent 形状 {zero} 个（Keynote 会拒绝）")
+    if conn:
+        problems.append(f"连接线 p:cxnSp {conn} 个（建议改为矩形）")
+    if emptyt:
+        problems.append(f"空文本 run {emptyt} 个")
+    return problems

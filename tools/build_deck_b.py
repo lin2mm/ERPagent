@@ -143,7 +143,6 @@ gantt(5.82, "装饰 / 齐套 / 发货", 17, 25, T["green"])
 d.vline(s, TLX + 25 * DAY, 4.32, 1.88, T["green"], 1.4, dash=True)
 d.text(s, TLX + 25 * DAY - 1.30, 6.12, 1.40, 0.22,
        [L("25 天", size=8.6, bold=True, color=T["green"], align="r")])
-d.text(s, X3, 2.44, 2.28, 0.22, [L("", size=8)])
 
 d.card(s, X3, 6.10, 12.09, 0.78, title="机制", fill=T["green_l"], accent=T["green"],
        title_size=12.0, lines=[
