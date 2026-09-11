@@ -10,6 +10,7 @@
 所以名单/PPT/PDF 更新后重跑一次即可。
 """
 import os
+import zipfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 OUT = os.path.join(ROOT, "site", "index.html")
@@ -49,9 +50,10 @@ GROUPS = [
         ("怎么打开、怎么下载", "download/HOW-TO-DOWNLOAD.md", "含直链与常见问题"),
         ("原方案评分报告", "review/01-Source-Materials-Score.md", ""),
         ("成品 PPT 评分报告", "review/02-PPT-Score.md", ""),
+        ("本轮交付自评", "review/03-Self-Score-Delivery.md", "下载页 88 / 名单核实 85"),
     ]),
     ("⑦ 一次全下", [
-        ("全部材料（138 个文件）", "download/ALL-MATERIALS.zip", "PPT + PDF + Excel + 逐页 PNG + 文档"),
+        ("全部材料", "download/ALL-MATERIALS.zip", "PPT + PDF + Excel + 逐页 PNG + 文档"),
     ]),
 ]
 
@@ -96,6 +98,16 @@ footer { color:var(--muted); font-size:12px; margin-top:34px; }
 """
 
 
+ZIP_PATH = os.path.join(ROOT, "download", "ALL-MATERIALS.zip")
+
+
+def zip_count():
+    try:
+        return len(zipfile.ZipFile(ZIP_PATH).namelist())
+    except Exception:
+        return 0
+
+
 def size_str(p):
     if not os.path.exists(p):
         return "文件缺失"
@@ -109,6 +121,8 @@ def esc(s):
 
 
 def card(title, path, desc):
+    if path.endswith("ALL-MATERIALS.zip"):
+        title = f"{title}（{zip_count()} 个文件）"
     exists = os.path.exists(os.path.join(ROOT, path))
     cls = "pill zip" if path.endswith(".zip") else "pill"
     d = f'<div class="d">{esc(desc)}</div>' if desc else ""

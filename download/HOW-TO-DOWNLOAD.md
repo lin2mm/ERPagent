@@ -264,7 +264,7 @@ download/PPT-02-slides-png/           18 张
 ## 全部材料打包
 
 ```
-download/ALL-MATERIALS.zip     共 138 个文件，约 42 MB
+download/ALL-MATERIALS.zip     共 139 个文件，约 42 MB
 ```
 
 含：6 份 PPTX + 6 张预览总图 + 7 份 PDF + 87 张逐页 PNG + 5 张已脱敏插图
