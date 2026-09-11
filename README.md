@@ -99,11 +99,10 @@ templates/     可直接填写的交付模板
 └─ 07-Customer-Qualification-Checklist.md  售前筛选打分表（一票否决 + 双侧打分 + 定级）
 
 prospects/     目标企业线索池
-├─ Target-Companies.csv     28 家 × 22 列（原始数据，脚本的唯一数据源）
+├─ Target-Companies.csv     28 家 × 22 列（唯一数据源：原始列 + 官网核实与联系方式列）
 ├─ Target-Companies.xlsx    Excel 版：名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
-├─ Target-Companies.v1.csv  第一版名单备份（14 列，未含官网核实与联系方式）
 ├─ verification.json        逐家官网核实记录（官网/主营/电话/邮箱/地址/结论/来源/核实日）
-└─ 备注：改名脚本 tools/merge_verification.py 可把 verification.json 并回 CSV（可反复执行）
+└─ 备注：tools/merge_verification.py 把 verification.json 并回 CSV，可反复执行（只重算派生列）
 
 assets/        已脱敏的插图（去企业名后入库，供构建脚本引用）
 └─ case-b/     案例 B 原方案文档的 5 张架构图（arch-01 … arch-05）

@@ -3,12 +3,14 @@
 """把「官网反向核实」的结果并进名单：prospects/Target-Companies.csv
 
 输入：
-  · prospects/Target-Companies.csv   —— 上一版名单（原始数据，脚本会原地升级为新版）
+  · prospects/Target-Companies.csv   —— 名单（14 列旧版或 22 列新版都能直接吃）
   · prospects/verification.json      —— 本轮逐家核实到的官网/主营/电话/邮箱/地址/结论
 
 产出：
   · prospects/Target-Companies.csv   —— 新 schema（22 列，含官网核实与联系方式）
-    旧版会自动备份为 prospects/Target-Companies.v1.csv（只备份一次）
+
+可反复执行：新版 CSV 里「原始列」原样保留，只按 verification.json 重算派生列，
+所以不需要留旧版备份（原来的 Target-Companies.v1.csv 已删除）。
 
 设计原则：
   · 官网写的口径 > 第三方黄页 > 推广软文；核不上的一律写明「待核实」，不做断言
@@ -17,11 +19,9 @@
 import csv
 import json
 import os
-import shutil
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CUR = os.path.join(ROOT, "prospects", "Target-Companies.csv")
-OLD = os.path.join(ROOT, "prospects", "Target-Companies.v1.csv")
 VER = os.path.join(ROOT, "prospects", "verification.json")
 
 # 优先级建议（本轮核实后的结论，人工判断）
@@ -88,18 +88,24 @@ PATH = {
 }
 
 
-def main():
-    if not os.path.exists(OLD):
-        shutil.copyfile(CUR, OLD)
-        print("旧版已备份 →", OLD)
-    # 已经被升级过（22 列）就以备份的 v1 为基准，支持反复执行
-    src = CUR
-    if os.path.exists(OLD):
-        probe = list(csv.reader(open(CUR, encoding="utf-8-sig")))
-        if len(probe[0]) != 14:
-            src = OLD
-    rows = list(csv.reader(open(src, encoding="utf-8-sig")))
+# 新版 CSV 里哪些位置是「原始列」（不会被本脚本改写）；其余列由 verification.json 重算
+#                              旧版字段：优先级 名称 省市 城市 网址 行业 主营 案例 分数 成功面 失败面 切入点 接触路径 可靠度
+BASE_IDX = [0, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17, 18, 11, 20]
+
+
+def load_base():
+    """读出名单的「原始列」——14 列旧版直接可用；22 列新版只取原始列。"""
+    rows = list(csv.reader(open(CUR, encoding="utf-8-sig")))
     head, data = rows[0], rows[1:]
+    if len(head) == 14:
+        return data
+    if len(head) == 22:
+        return [[r[i] for i in BASE_IDX] for r in data]
+    raise SystemExit(f"无法识别的名单列数：{len(head)}（应为 14 或 22）")
+
+
+def main():
+    data = load_base()
     ver = json.load(open(VER, encoding="utf-8")) if os.path.exists(VER) else {}
 
     new_head = ["优先级", "优先级建议", "企业名称", "省市", "城市",
