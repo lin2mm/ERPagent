@@ -111,7 +111,6 @@ tools/         生成与校验工具
 | Agent 工程 | `docs/04` → `templates/06` → `spec/agents.yaml` + `spec/gates.yaml` |
 | 要评估质量 | `review/01` 原方案评分 → `review/02` PPT 评分与逐维对照 |
 | **做售前 / 见老板** | `docs/07` 老板视角（吸引力·顾虑·客户筛选·成交要点）→ `templates/01` 填企业画像 → `templates/05` 配合清单 |
-| 做售前 / 见老板 | `docs/07` 老板视角（吸引力 / 顾虑 / 客户筛选 / 成交要点）→ `templates/01` 填企业画像 → `templates/05` 配合清单 |
 
 ---
 
