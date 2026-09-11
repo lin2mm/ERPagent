@@ -7,9 +7,8 @@
 
 | 想下载什么 | 用这个文件 |
 | --- | --- |
-| 两份 PPT + 两张 18 页预览图 | `PPT-ONLY.zip`（3.0 MB） |
-| 只下第一份 PPT | `PPT-01-Roll-Material-MES-System-Proposal.pptx` |
-| 只下第二份 PPT | `PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx` |
+| 两份 PPT（直接点，各约 110 KB） | `PPT-01-...pptx` / `PPT-02-...pptx` |
+| 两张 18 页预览图（不用装 Office 就能通读） | `PREVIEW-PPT-01-18pages.png` / `PREVIEW-PPT-02-18pages.png` |
 | 全部材料（PPT + 7 份文档 + 6 份模板 + 3 份规格 + 2 份评分报告） | `ALL-MATERIALS.zip`（0.3 MB） |
 
 ## 下载按钮在哪
