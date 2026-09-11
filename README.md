@@ -115,9 +115,10 @@ spec/          机器可读规格
 
 ppt/           六份成品 PPT（机制版 18 页 ×2 + 老板版 16 / 19 页 + 面谈版 8 页 ×2）+ 预览总图
 pdf/           六份 PDF（机制版、老板版、面谈版；Keynote 原生可开）
-review/        两轮评分报告
+review/        三轮评分报告（口径各不相同，分数不可直接相加）
 ├─ 01-Source-Materials-Score.md   两份原方案按 7 维 100 分量表评分 + 转用价值评估
-└─ 02-PPT-Score.md     两份 PPT 评分 + 与原方案逐维对照
+├─ 02-PPT-Score.md                 两份机制版 PPT 评分 + 与原方案逐维对照
+└─ 03-Self-Score-Delivery.md       本轮交付自评（下载页 88 / 名单核实 85，6 维量表 + 扣分点与补齐清单）
 
 tools/         生成与校验工具
 ├─ deckkit.py        声明式 PPTX 生成 + 预览渲染 + 溢出/越界检测 + Keynote 兼容自检
