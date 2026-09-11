@@ -48,7 +48,8 @@ docs/
 ├─ 03-Blueprint-Reusable-Patterns.md
 ├─ 04-Agent-Workflow-Design.md
 ├─ 05-Delivery-SOP-for-New-Enterprise.md
-└─ 06-Risk-Acceptance-Metrics.md
+├─ 06-Risk-Acceptance-Metrics.md
+└─ 07-Boss-Perspective-Sales-Strategy.md  老板视角：吸引力 / 顾虑 / 客户筛选 / 成交要点
 
 templates/     可直接填写的交付模板
 ├─ 01-Enterprise-Profile.md
@@ -109,6 +110,8 @@ tools/         生成与校验工具
 | 实施 / 项目经理 | `docs/05` 全篇 → 按 `templates/01`~`05` 顺序填空 |
 | Agent 工程 | `docs/04` → `templates/06` → `spec/agents.yaml` + `spec/gates.yaml` |
 | 要评估质量 | `review/01` 原方案评分 → `review/02` PPT 评分与逐维对照 |
+| **做售前 / 见老板** | `docs/07` 老板视角（吸引力·顾虑·客户筛选·成交要点）→ `templates/01` 填企业画像 → `templates/05` 配合清单 |
+| 做售前 / 见老板 | `docs/07` 老板视角（吸引力 / 顾虑 / 客户筛选 / 成交要点）→ `templates/01` 填企业画像 → `templates/05` 配合清单 |
 
 ---
 
