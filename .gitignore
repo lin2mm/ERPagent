@@ -6,3 +6,4 @@
 __pycache__/
 !download/*.pptx
 !download/*.png
+!download/ALL-MATERIALS.zip
