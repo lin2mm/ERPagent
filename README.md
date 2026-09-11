@@ -75,7 +75,8 @@ docs/
 ├─ 04-Agent-Workflow-Design.md
 ├─ 05-Delivery-SOP-for-New-Enterprise.md
 ├─ 06-Risk-Acceptance-Metrics.md
-└─ 07-Boss-Perspective-Sales-Strategy.md  老板视角：吸引力 / 顾虑 / 客户筛选 / 成交要点
+├─ 07-Boss-Perspective-Sales-Strategy.md  老板视角：吸引力 / 顾虑 / 客户筛选 / 成交要点
+└─ 08-Prospect-Shortlist.md   目标企业名单（按筛选标准初筛，含成功面 / 失败面）
 
 templates/     可直接填写的交付模板
 ├─ 01-Enterprise-Profile.md
@@ -85,6 +86,9 @@ templates/     可直接填写的交付模板
 ├─ 05-Commitment-and-Milestones.md
 ├─ 06-Agent-List-and-Separation.md
 └─ 07-Customer-Qualification-Checklist.md  售前筛选打分表（一票否决 + 双侧打分 + 定级）
+
+prospects/     目标企业线索池
+└─ Target-Companies.csv   28 家初筛名单（优先级 / 城市 / 网址 / 主营 / 匹配点 / 风险点 / 切入点）
 
 spec/          机器可读规格
 ├─ agents.yaml     14 个 Agent 的完整规格（触发/输入/工具/输出/护栏/度量）
@@ -141,7 +145,7 @@ tools/         生成与校验工具
 | 实施 / 项目经理 | `docs/05` 全篇 → 按 `templates/01`~`05` 顺序填空 |
 | Agent 工程 | `docs/04` → `templates/06` → `spec/agents.yaml` + `spec/gates.yaml` |
 | 要评估质量 | `review/01` 原方案评分 → `review/02` PPT 评分与逐维对照 |
-| **售前 / 见老板** | `templates/07` **客户筛选清单（先打分定级，再决定投入）** → `docs/07` 老板视角与成交要点 → `pdf/PITCH-02-Short`（面谈版 8 页）→ `pdf/PITCH-02`（留底 16 页）→ `ppt/PPT-02`（机制版）→ `templates/01` 企业画像 → `templates/05` 配合清单 |
+| **售前 / 见老板** | `docs/08` **目标企业名单** → `templates/07` **客户筛选清单（先打分定级）** → `docs/07` 老板视角与成交要点 → `pdf/PITCH-02-Short`（面谈版 8 页）→ `pdf/PITCH-02`（留底 16 页）→ `ppt/PPT-02`（机制版）→ `templates/01` 企业画像 → `templates/05` 配合清单 |
 
 ---
 

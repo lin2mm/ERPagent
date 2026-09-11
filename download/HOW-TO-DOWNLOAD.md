@@ -100,6 +100,29 @@ templates/07-Customer-Qualification-Checklist.md    可编辑版（Markdown）
 
 ---
 
+## 本次新增：目标企业名单（28 家初筛）
+
+按 `templates/07` 的打分口径对公开信息做初筛，得出的**线索池**。
+每家企业都写了**成功面（为什么值得谈）**与**失败面（要核实什么）**：
+
+```
+docs/08-Prospect-Shortlist.md            完整名单 + 评分速览 + 详解 + 获客渠道
+prospects/Target-Companies.csv           28 家表格（Excel / Numbers 可直接打开）
+```
+
+构成：S 级 4 家 · A 级 11 家 · B 级 11 家 · C 级 2 家，覆盖
+卷材加工（案例 A）、非标门/防火门、医疗与实验室家具、展示道具、集成房屋（案例 B）。
+
+**核心校准**：判断规模**按员工数（80–800 人）看，不要按营收** ——
+材料与工程类企业的营收被原材料和工程款放大得很厉害。
+
+文档里另附四种**持续获客渠道**：招标中标名单、产业带集群、行业展会、招聘信息
+（在招 MES / 信息化岗位 = 已有预算，优先级直接提升）。
+
+> ⚠️ 名单为公开信息初筛，不是尽调结论；本仓库为公开仓库，如需保密请移入私有仓库。
+
+---
+
 ## 遇到「file format is invalid」怎么办
 
 **根因已找到并修复。** 旧版 PPTX 里有 **18 处高度为 0 的形状**（用作分隔线），
@@ -170,7 +193,7 @@ download/PPT-02-slides-png/           18 张
 ## 全部材料打包
 
 ```
-download/ALL-MATERIALS.zip     共 125 个文件，约 39 MB
+download/ALL-MATERIALS.zip     共 127 个文件，约 39 MB
 ```
 
 含：4 份 PPTX + 4 份 PDF + 4 张预览总图 + 68 张逐页 PNG
@@ -201,6 +224,10 @@ https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PPT-02-Custom
 
 # 目标客户筛选清单（A4 打印版）
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/CHECKLIST-Customer-Screening.pdf
+
+# 目标企业名单（28 家初筛）
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/docs/08-Prospect-Shortlist.md
+https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/prospects/Target-Companies.csv
 
 # 全部材料
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/download/ALL-MATERIALS.zip
