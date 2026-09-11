@@ -1,0 +1,312 @@
+# Agent 规格：机器可读清单
+# 设计哲学：Agent 提议，规则裁决，人拍板
+# permission: readonly | draft | closed_loop
+# 所有写操作必须走既有业务 API，禁止直连数据库。
+
+meta:
+  version: 1.0
+  principle: "Agent 提议 → 规则裁决 → 人拍板"
+  hard_rules:
+    - id: HR-1
+      rule: 写操作一律走既有业务 API，禁止直连数据库
+    - id: HR-2
+      rule: Agent 以虚拟账号接入，权限等同其服务岗位，写操作全程审计不可删
+    - id: HR-3
+      rule: 幂等，重试不产生重复单据
+    - id: HR-4
+      rule: 必须有降级路径，永不阻塞生产
+    - id: HR-5
+      rule: 输出为候选方案 + 证据，不是结论
+    - id: HR-6
+      rule: 输出带 data_as_of（数据时点）与来源
+    - id: HR-7
+      rule: 干跑模式，写动作先产出 diff
+    - id: HR-8
+      rule: 阈值护栏，超阈值必须人工审批
+    - id: HR-9
+      rule: 提示注入防护 + 工具白名单
+  forbidden:
+    - 绕过或建议绕过硬闸门
+    - 修改已报工/已审核/已执行的冻结数据
+    - 直接对外发送消息
+    - 参与利益分配决策（工资/单价/罚款）
+    - 自动批准质量放行（特采/让步）
+    - 数据缺失时推测事实值
+    - 用自然语言生成规则判定结果
+
+waves:
+  - id: W1
+    name: 只读参谋
+    weeks: [0, 6]
+    permission_ceiling: readonly
+  - id: W2
+    name: 候选方案类
+    weeks: [6, 14]
+    permission_ceiling: draft
+  - id: W3
+    name: 闭环执行与主动追办
+    weeks: [14, 26]
+    permission_ceiling: closed_loop
+  - id: W4
+    name: 跨系统协同与自省
+    weeks: [26, null]
+    permission_ceiling: closed_loop
+
+agents:
+
+  - id: A1_scheduling_copilot
+    name: 排产参谋
+    family: 计划与排产
+    wave: W2
+    permission: draft
+    trigger:
+      - event: order_ready_for_planning
+      - action: user_invokes_copilot
+    inputs: [orders_pending_planning, available_materials_incl_in_transit, sluggish_stock_tiers, capacity_calendar, due_dates]
+    tools:
+      - auto_scheduling_engine      # 可调权重
+      - nesting_algorithm           # 拼板/套料
+      - material_side_panel_query
+    outputs:
+      - type: candidate_plans
+        count: [2, 3]
+        fields: [on_time_rate, sluggish_consumption, yield_rate, changeover_count, risks]
+      - type: rationale
+        note: 用自然语言解释"为什么推荐方案 B"
+    guardrails:
+      - 只生成计划草稿，不自动派工
+      - 权重变化必须显式记录
+      - 产能校验走系统硬闸门，Agent 只提前提示
+    human_decision:
+      decider: 生产部长
+      sees: [候选方案, 指标对比, 风险提示]
+      landing: 我的待办 / 计划编排中心
+    metrics: [adoption_rate, on_time_after_adoption, sluggish_consumed_kg, planning_time_saved]
+    degraded_mode: 返回人工可用状态（不生成方案，直接进入手工排产界面）
+
+  - id: A2_kit_and_shortage_chaser
+    name: 齐套/缺料追办
+    family: 计划与排产
+    wave: W1
+    permission: readonly
+    upgrade_to: draft   # 第二波起可一键建采购申请草稿
+    trigger:
+      - cron: daily
+      - event: due_date_within_n_days
+      - event: new_shortage_detected
+    inputs: [bom_kit_view, inventory, in_transit, po_lead_times, outsourcing_progress]
+    tools: [kit_query, shortage_analysis, purchase_request_draft, notification]
+    outputs:
+      - type: chase_list
+        fields: [缺什么, 缺多少, 卡在哪道工序或哪张采购单, 该找谁, 建议动作, 截止日]
+      - type: purchase_request_draft
+    guardrails:
+      - 只创建草稿与待办
+      - 不代替采购员下单
+      - 不修改交期，只提示风险
+    human_decision: {decider: 计划员/采购员, landing: 我的待办}
+    metrics: [shortage_lead_days, stoppage_due_to_shortage, delay_rate]
+    notes: 关键路径件（如开模打样件）必须单独成列预警
+
+  - id: A3_sluggish_stock_disposal
+    name: 呆滞消化
+    family: 计划与产排
+    wave: W3
+    permission: draft
+    trigger:
+      - cron: weekly
+      - event: stock_crosses_tier   # 30/90/180 天
+    inputs: [sluggish_list, open_orders, nesting_rules, downgrade_rules, customer_grade_matrix]
+    tools: [sluggish_query, nesting_algorithm, downgrade_flow, customer_grade_rule]
+    outputs:
+      - type: disposal_suggestions
+        fields: [优先改裁成哪些规格, 可否合卷, 可否降级给某类客户, 预计释放资金]
+    guardrails:
+      - 等级降级走系统合规流程（单向 + 留痕）
+      - 不得建议"降级卖给等级不匹配的客户"
+    human_decision: {decider: 生产部长/财务, landing: 我的待办}
+    metrics: [sluggish_amount_90_180, inventory_turnover_days]
+
+  - id: B1_exception_triage
+    name: 异常聚合与处置参谋
+    family: 现场与异常
+    wave: W2
+    permission: draft
+    trigger:
+      - event: exception_reported
+      - event: alert_escalated
+    inputs: [exception_type_raw_text, related_coil_or_workorder, historical_resolutions, capacity_state]
+    tools: [exception_query, similar_case_search, assign_api, knowledge_base]
+    outputs:
+      - type: triage_recommendation
+        fields: [分类, 定级, 推荐处置路径, 相似历史案例, 建议指派]
+      - type: ticket_draft
+    guardrails:
+      - 定级与指派可由人覆盖
+      - 质量类异常不得直接置为"已解决"
+    human_decision: {decider: 生产部长, landing: 异常与变更页}
+    metrics: [avg_response_time, avg_resolution_time, repeat_exception_rate]
+    notes: 核心价值是"翻译"——把工人口语描述映射到规范异常类型与处置路径
+
+  - id: B2_insert_order_impact
+    name: 插单/改单影响评估
+    family: 现场与异常
+    wave: W2
+    permission: draft
+    trigger: [insert_order_requested, change_order_submitted]
+    inputs: [request_detail, wip, line_occupancy, material_availability, affected_orders]
+    tools: [wip_query, capacity_simulation, due_date_recalc, material_check]
+    outputs:
+      - type: impact_assessment
+        fields: [受影响订单, 各延期天数, 需追加什么, 建议优先级 P0/P1/P2, 理由]
+    guardrails:
+      - 仅生成评估；审批与优先级调整由人执行
+      - 插单决策链永久保留（作为产线稳定性考核依据）
+    human_decision: {decider: 生产部长/厂长, landing: 异常与变更}
+    metrics: [approval_lead_time, assessment_accuracy, insert_order_frequency]
+
+  - id: B3_equipment_predictive
+    name: 设备预警与维保参谋
+    family: 现场与异常
+    wave: W3
+    permission: draft
+    trigger: [machine_heartbeat_lost, maintenance_due, repeated_repair]
+    inputs: [device_heartbeat, counters, downtime_log, repair_history, spare_parts_stock]
+    tools: [machine_status_query, repair_history, spare_parts_query, maintenance_plan]
+    outputs: [{type: warning_and_recommendation, fields: [预警内容, 建议动作, 依据]}]
+    guardrails: [不自动停线, 不自动采购备件]
+    human_decision: {decider: 设备主管, landing: 设备维护}
+    metrics: [unplanned_downtime, spare_part_stockout, repair_repeat_rate]
+
+  - id: C1_defect_avoidance
+    name: 缺陷规避与改裁参谋
+    family: 质量与追溯
+    wave: W2
+    permission: draft
+    trigger: [coil_ready_for_cutting, defect_registered, user_opens_nesting]
+    inputs: [defect_records_with_position_intervals, order_specs, coil_width]
+    tools: [defect_query, nesting_algorithm_with_defect_constraints]
+    outputs:
+      - type: avoidance_or_recut_plan
+        fields: [成材率, 接缝数, 余料, 裁切示意]
+    guardrails:
+      - 方案须满足硬约束（如接缝数上限、成材率下限）
+      - 采纳走人
+    precondition: 缺陷必须已结构化为"带位置的区间"，否则先做数据改造
+    human_decision: {decider: 生产部长/质检, landing: 拼板方案}
+    metrics: [yield_rate, scrap_weight_down, recut_decision_time]
+
+  - id: C2_quality_traceback
+    name: 质量事故溯源
+    family: 质量与追溯
+    wave: W4
+    permission: closed_loop
+    trigger: [user_inputs_batch_or_serial_or_period]
+    inputs: [genealogy, batches, process_parameters, inspections, shipments, responsible_persons]
+    tools: [forward_trace, reverse_trace, ledger_export, freeze_api]
+    outputs:
+      - type: affected_scope
+        fields: [受影响对象清单, 订单, 项目/客户]
+      - type: freeze_proposal
+      - type: exportable_ledger
+    guardrails:
+      - 冻结为建议，执行需人确认
+      - 导出台账记录审计
+    human_decision: {decider: 质量负责人, landing: 追溯中心}
+    metrics: [traceback_time_minutes, recall_scope_accuracy, project_acceptance_first_pass]
+    notes: 唯一"能直接换来订单"的 Agent，做政企项目的企业优先上
+
+  - id: C3_concession_pre_review
+    name: 让步放行/特采预审
+    family: 质量与追溯
+    wave: W2
+    permission: draft
+    trigger: [ncr_submitted, concession_requested]
+    inputs: [nonconformance_detail, inspection_data, customer_grade_matrix, similar_concessions]
+    tools: [inspection_ledger, customer_grade_rule, historical_concession_search]
+    outputs:
+      - type: pre_review_opinion
+        fields: [证据汇总, 规则比对结果, 风险提示, 建议处置, 相似先例]
+    guardrails:
+      - 绝不自动批准
+      - 审批链完整保留；特采必留档
+    human_decision: {decider: 质量负责人/总经理, landing: 质量→让步放行}
+    metrics: [approval_lead_time, concession_rate, complaint_rate_after_concession]
+
+  - id: D1_quote_copilot
+    name: 配置报价参谋
+    family: 商务与资金
+    wave: W3
+    permission: draft
+    trigger: [configuration_started, inquiry_received]
+    inputs: [configuration, measurement_data, constraint_rules, historical_prices, material_cost]
+    tools: [configurator_engine, standard_cost, price_history_search]
+    outputs:
+      - type: quote_draft
+        fields: [配置校验结果, 成本参考, 毛利提示, 交期区间, 与历史价偏离说明]
+    guardrails: [折扣/低价走审批, 不承诺交期（只给区间）]
+    human_decision: {decider: 销售负责人, landing: 报价单}
+    metrics: [quote_time, first_pass_rate, gross_margin_deviation]
+
+  - id: D2_receivables_chaser
+    name: 收款催办
+    family: 商务与资金
+    wave: W3
+    permission: closed_loop
+    trigger: [aging_crosses_tier, payment_milestone_due]
+    inputs: [ar_ledger, aging, credit_limit, payment_history, contract_milestones]
+    tools: [ar_query, customer_360, task_push]
+    outputs: [{type: collection_task, fields: [金额, 超期天数, 建议动作, 沟通要点草稿]}]
+    guardrails: [不直接联系客户（对外由人发出）, 不动信用额度]
+    human_decision: {decider: 销售/财务, landing: 我的待办}
+    metrics: [avg_collection_days, overdue_amount_ratio, chase_response_rate]
+
+  - id: D3_delivery_commitment
+    name: 交期承诺参谋
+    family: 商务与资金
+    wave: W3
+    permission: readonly
+    trigger: [sales_needs_commitment]
+    inputs: [capacity_load, wip, material_availability, scheduling_candidates, historical_cycle_times]
+    tools: [scheduling_simulation, capacity_calendar, material_query]
+    outputs: [{type: commitment_range, fields: [乐观交期, 保守交期, 依据, 风险点]}]
+    guardrails: [只给区间与依据, 不对外发送, 不替代排产决策]
+    human_decision: {decider: 销售, landing: 订单交期建议}
+    metrics: [commitment_fulfillment_rate, complaint_due_to_delay]
+
+  - id: E1_sop_drawing_qa
+    name: 工艺/SOP/图纸问答
+    family: 知识与管理
+    wave: W1
+    permission: readonly
+    trigger: [workstation_user_asks, keyword_search]
+    inputs: [current_workorder_process, equipment_model, product_spec]
+    tools: [sop_library, drawing_library_version_filtered, process_rule_library]
+    outputs:
+      - type: answer
+        must_include: [引用来源（文档编号 + 版本 + 页码/图号）]
+    guardrails:
+      - 必须带引用
+      - 图纸只能返回当前有效版本
+      - 涉及安全参数的答案需二次确认提示
+    human_decision: {decider: 使用者自行判断, landing: 工位端}
+    metrics: [hit_rate, rework_due_to_wrong_version, usage_frequency]
+
+  - id: E2_management_briefing
+    name: 经营日报/例会参谋
+    family: 知识与管理
+    wave: W1
+    permission: readonly
+    trigger: [cron_daily, meeting_board_opened]
+    inputs: [dashboard_metrics_same_source, exception_list, todo_list, trends]
+    tools: [report_query, metric_definition_library, exception_query, todo_query]
+    outputs:
+      - type: structured_briefing
+        sections: [发生了什么, 可能的原因, 建议关注什么, 建议谁去处理]
+        must_include: [每条带数据来源与时点]
+    guardrails:
+      - 口径必须与驾驶舱同源
+      - 结论措辞不得超出数据支撑
+      - 必须展示数据时点
+    human_decision: {decider: 管理层, landing: 例会看板 / 移动看板}
+    metrics: [meeting_prep_time, todo_conversion_rate, proactive_read_rate]

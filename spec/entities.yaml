@@ -1,0 +1,164 @@
+# 领域模型规格：主线对象 · 单据层级 · 状态机 · 事件
+# 抽象自两个不同行业（卷材辊涂/裁片 与 非标定制门）的同一套骨架。
+# 用法：新企业落地时，把 <> 里的内容替换成该企业的实际命名。
+
+meta:
+  version: 1.0
+  note: |
+    两张案例证明存在一套"行业中立的制造企业数字化内核"。
+    行业差异只体现在三处：① 主线对象是什么 ② 闸门规则是什么 ③ 算法约束是什么。
+
+# ── 1. 主线对象（贯穿全流程、唯一标识、可追溯的那一个东西） ──────
+trunk_object:
+  name: <主线对象，如"卷号"或"部件码">
+  identifier_rule: <编码规则>
+  coding_principle: "码上只存身份，信息全在系统里"   # 把码做成指针，不做数据容器
+  measurement:
+    unit: <米 | 重量 | 片 | 樘 | 件 | 平方米>
+    conversions: []
+  relations:
+    can_serve_multiple_orders: <bool>
+    order_can_consume_multiple: <bool>
+  auxiliary_identifiers:            # 辅助标识只做归集，不承担状态机
+    - {name: <批次码>, scope: <来料>, minted_at: <收货时>}
+    - {name: <托盘码>, scope: <批量工序>, minted_at: <进线绑定时>}
+    - {name: <配套包码>, scope: <成套件>, minted_at: <配包时>}
+    - {name: <箱码>, scope: <发货单元>, minted_at: <装箱时>}
+  mutation:
+    split:                          # 分裂（拆卷/拆单/转码）
+      rule: <触发条件>
+      new_id_pattern: "<源ID>-S{序号}"
+      genealogy: 保留父子链
+    merge:                          # 合并（合卷/组包）
+      rule: <触发条件，如 同规格 + 单卷余量低于阈值>
+      new_id_pattern: "<源ID>-M{序号}"
+      genealogy: 保留父子链
+    relabel:                        # 转码/补码（物理损坏）
+      rule: <触发条件，如 高温导致码损坏>
+      guard: 必须校验工序进度一致后才发新码   # 防作弊
+  traceability:
+    forward: "扫任意码 → 3 秒内出全生命周期档案"
+    forward_fields: [材料批次, 工艺参数, 设备, 责任人, 图纸/工艺版本, 检验记录, 发货去向]
+    reverse: "输入批次/供应商/设备/时间区间 → 定位受影响范围 → 冻结 → 导出台账"
+    closure_table: true             # 溯源闭包表：扫旧 ID 自动重定向到新 ID
+    closure_message: "该{对象}已{合并/转换}，已跳转新{标识}"
+
+# ── 2. 五层单据体系 ────────────────────────────────────────────
+document_layers:
+  - layer: 客户需求层
+    documents: [<销售订单>]
+    answers: "客户要什么、要多少、何时交"
+    created_by: <ERP 同步 / 文员录入>
+    id_pattern: <SO-xxx>
+    dedup: 重复推送自动去重
+  - layer: 规划层
+    documents: [<生产计划>]
+    answers: "做什么、做多少、用哪类料"
+    created_by: <生产部长 / 自动排单生成草稿>
+    id_pattern: <PP-xxx>
+    dependency: 下游计划通过"依赖计划"挂接上游计划；上游完工后方可派工
+  - layer: 执行层
+    documents: [<工单>]
+    answers: "具体怎么做、用哪些料"
+    created_by: <按计划拆分，按卷/件拆分，支持一单多料>
+    id_pattern: <WO-日期-序号>
+    notes: 支持跨日续派：多次派工的完工量之和自动回写工单
+  - layer: 派工层
+    documents: [<派工单>]
+    answers: "派给谁、哪条线、什么顺序、哪天做"
+    created_by: <生产部长>
+    id_pattern: <D日期-序号>
+    side_effect: 自动生成仓库领料任务
+  - layer: 记录层
+    documents: [<报工记录>]
+    answers: "做了多少、消耗多少、何时做的"
+    created_by: <工位报工 / 机联自动>
+    id_pattern: "<工单号>-序号"
+    source_enum: [Manual, Auto, AutoModified]   # AutoModified 必填原因
+
+# ── 3. 状态机 ─────────────────────────────────────────────────
+state_machine:
+  # 模板：初始态 → 中间态 → 终态；异常态有处置路径
+  states:
+    - {code: 0,  name: <待检验>,    entry: <入库完善后>,      reversible: false, terminal: false}
+    - {code: 1,  name: <可用>,      entry: <检验合格>,        reversible: true,  terminal: false}
+    - {code: 2,  name: <在制中>,    entry: <开卷/开工>,       reversible: false, terminal: false}
+    - {code: 3,  name: <待下道>,    entry: <上道完工>,        reversible: false, terminal: false}
+    - {code: 6,  name: <余料>,      entry: <裁切后仍可用>,    reversible: true,  terminal: false}
+    - {code: 7,  name: <呆滞>,      entry: <超期未用 30/90/180>, reversible: true, terminal: false}
+    - {code: 12, name: <不合格>,    entry: <检验不合格>,      reversible: false, terminal: false}
+    - {code: 9,  name: <已发货>,    entry: <发货确认>,        reversible: false, terminal: true}
+    - {code: 10, name: <已报废>,    entry: <报废审批>,        reversible: false, terminal: true}
+    - {code: 15, name: <已退货>,    entry: <退货确认>,        reversible: true,  terminal: true}
+  design_rules:
+    - 终态越少越好（终态多 → 数据脏）
+    - 每个状态必须有明确的进入条件（由哪个动作触发）
+    - 明确可逆性（哪些能撤销/恢复）
+    - 异常态必须有处置路径，不能是死角
+  judgment_standard: "车间里任何一个人，拿起任何一个主线对象，扫一下就知道它现在能干什么、不能干什么"
+
+# ── 4. 事件档案（每次状态迁移记一条） ─────────────────────────
+events:
+  types: [创建, 入库, 检验, 开卷/开工, 完工, 缺陷, 裁切/分装, 合并, 拆分,
+          分配, 发货, 报废, 呆滞, 降级, 退货, 改单, 其他]
+  fields: [事件类型, 时间, 操作人, 触发动作, 变更前后状态, 关联单据, 备注]
+  purpose: 任意时点扫码即可还原"这一{对象}经历了什么"
+
+# ── 5. 单据状态链 ─────────────────────────────────────────────
+document_state_chains:
+  销售订单:   "草稿 → 待审批 → 待规划 → 部分规划 → 全部规划 → 部分发货 → 已发货 → 已完成(款清) | 分支: 取消/关闭"
+  采购订单:   "草稿 → 待审批 → 在途 → 部分收货 → 已收货 | 分支: 取消"
+  出入库单:   "草稿 → 已审核 → 已执行 → 已关闭 | 已执行可红冲; 草稿/已审核可取消"
+  盘点单:     "已计划 → 盘点中 → 已复盘 → 已完成(生成调整单)"
+  工单:       "待开工 → 进行中 → 已完工 | 已撤销 ⇄ 已恢复"
+  派工单:     "待执行 → 执行中 → 已完成 | 已取消"
+
+# ── 6. 常用枚举字典（同时是开发文档 / 测试用例来源 / 培训教材附录） ──
+enums:
+  物料等级: [A, B, C]              # 单向降级 A→B→C，禁止反向
+  呆滞阶段: [正常, 30天, 90天, 180天]
+  库位状态: [空闲, 占用, 预警, 锁定, 待领料, 待调出, 待调入, 拣选中]
+  仓库类型: [原料仓, 成品仓, 线边仓, 呆滞仓, 辅料仓, 在途虚拟仓]
+  告警级别: [P0紧急, P1重要, P2一般]
+  设备连接: [OpcUa, ModbusTcp, Mqtt, HttpPush, DbPoll]
+  报工来源: [Manual, Auto, AutoModified]
+  改单类型: [换卷, 调量, 拆单, 撤销, 修正]
+  改单原因: [卷料缺陷, 规格不符, 订单变更, 录入错误, 其他]
+  插单优先级: [P0可中断在制, P1插当前之后, P2队尾]
+
+# ── 7. 界面颜色语义（全系统统一，含大屏/平板/移动端） ──────────
+color_semantics:
+  绿: 正常 / 可用 / 合格 / 完成
+  蓝: 进行中 / 动向 / 待处理
+  黄: 呆滞 30 天 / 一般预警
+  橙: 呆滞 90 天 / P1 告警
+  红: 呆滞 180 天 / 异常阻断
+  灰: 空库位 / 停用 / 已关闭
+  mnemonic: "绿正常、蓝在动、黄要防、橙要急、红必停"
+
+# ── 8. 集成与边界 ─────────────────────────────────────────────
+integration:
+  outbound_queue:
+    poll_interval_seconds: 15
+    retry: {max_attempts: 5, backoff: exponential}
+    dead_letter: {manual_retry: true}
+    reconcile: {cron: "每日凌晨", scopes: [生产入库, 领退料, 发货]}
+  inbound:
+    channels: [OpenApi网关(优先), 数据库中间表, 手动拉取(兜底)]
+  field_mapping: configurable   # 对方列名变化无需修改程序
+  boundary_principle: |
+    业务财务（应收应付、成本、资金）在本系统；
+    总账、发票、税务以既有财务系统为准，通过同步与凭证导出衔接。
+
+# ── 9. 可靠性与离线 ───────────────────────────────────────────
+reliability:
+  offline_queue: {storage: IndexedDB, idempotent: true, auto_sync_on_recovery: true}
+  conflict_resolution: {policy: first_come_first_served, ambiguous: manual_confirm}
+  edge_node:                     # 车间边缘节点（重资产场景）
+    capabilities: [码池缓存与本地出码, 任务/图纸快照下发, 防错校验本地执行, 断网报工暂存与恢复补传]
+    conflict_queue: {evidence: 双侧证据, decider: 班组长}
+    principle: "断网的麻烦留给系统，不甩给工人"
+  algorithm_degradation: "算法超时或失败自动降级为贪心策略，保证总能给出可用方案，不阻塞生产"
+  kiosk_self_protection: {idle_hide_cursor_seconds: 60, disable_context_menu: true, heartbeat_recover_seconds: 5}
+  data_freshness: "看板显示数据更新时间；超期显示'陈旧'标记"
+  price_snapshot: true          # 单价调价不影响历史账单金额

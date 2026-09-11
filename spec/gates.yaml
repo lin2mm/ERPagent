@@ -1,0 +1,219 @@
+# 硬闸门规格：机器可读清单
+# 闸门 = 不通过就绝对过不去的硬校验，由确定性代码实现，Agent 不得绕过。
+# type: physical | compliance | quality | management
+#   physical    物理不可能（争议最低，优先做）
+#   compliance  合规/认证（争议低）
+#   quality     质量/工艺（争议中）
+#   management  管理规则（争议最高，需一把手背书）
+# action: hard_block | soft_confirm | warn
+# release: 出路（必须留档），none 表示无出路
+
+meta:
+  version: 1.0
+  principle: "闸门必须有出路，且出路必须留档"
+  design_rules:
+    - 拦截信息包含：为什么拦 + 现在该怎么办 + 谁来批
+    - 不是死墙：可走审批留档后放行
+    - 拦截有视觉反馈（红屏/醒目提示），必要时听觉反馈
+    - 拦截日志可查（谁、何时、被哪条闸门拦、后续怎么解决）
+    - 上线前评估"有没有人会因此没法干活"，如有必须给出路
+    - 明确"谁来维护规则阈值"
+  rollout_order: [physical, compliance, quality, management]
+
+gates:
+
+  # ── 物理不可能类（第 1 批上线） ──────────────────────────────
+  - id: G-P01
+    name: 产能上限硬拦截
+    type: physical
+    rule: |
+      派工提交时校验：产线当日已排产能 + 本次派工量 <= 产线日产能上限
+      利用率 >= 80% 触发黄色预警；>= 100% 硬拦截
+    when: 派工提交时
+    action: hard_block
+    release: none   # 物理不可能，无出路；改为换日期/换产线
+    error_message: "该产线当日已排满（利用率 {util}%）。请改派其他日期或其他产线。"
+    owner: 生产部长
+    maintainer: 系统管理员（产线日产能上限在"产线管理"维护）
+    audit: 记录拦截时间/操作人/产线/提交量
+
+  - id: G-P02
+    name: 在途物料未到厂不可派工
+    type: physical
+    rule: 派工日期 <= 在途物料预计到货日 时允许；否则拦截
+    when: 派工提交时
+    action: hard_block
+    release: none   # 改为使用已入库物料，或调整派工日期
+    error_message: "所选用料尚未到厂（预计到货 {eta}）。请换用已入库物料，或将派工日期调整到 {eta} 之后。"
+    dependency: 采购单的"预计到货日期"必须如实填写
+    owner: 生产部长
+    audit: 记录拦截详情
+
+  - id: G-P03
+    name: 库位占用冲突
+    type: physical
+    rule: 目标库位已被占用（状态 != 空闲/待调入）时不允许入库或调拨入位
+    when: 入库/调拨执行时
+    action: hard_block
+    release: none
+    error_message: "目标库位 {loc} 当前为 {status}，不可入位。"
+    owner: 仓管员
+
+  # ── 合规/认证类（第 2 批上线） ──────────────────────────────
+  - id: G-C01
+    name: 客户等级与物料等级匹配
+    type: compliance
+    rule: |
+      发货拣货时校验：物料等级 ∈ 客户等级允许的可发等级范围
+      （例：VIP 仅可发 A 级；普通客户可发 A/B 级）
+    when: 发货单保存/确认时
+    action: hard_block
+    release: 特采审批（质量 → 让步放行），留档特采单
+    error_message: "客户 {cust} 等级为 {grade}，仅可发 {allowed} 级物料。如需放行请走特采审批。"
+    audit: 发货记录保留**发货时等级快照**
+    owner: 质量负责人；超阈值需总经理
+    metrics: [拦截次数, 特采放行比例]
+
+  - id: G-C02
+    name: 强制认证件校验
+    type: compliance
+    rule: 特定产品类型（如防火门）强制校验关键件的认证资质与规格
+    when: 组包/装配绑定时
+    action: hard_block
+    release: 采购换料；不可审批绕过
+    error_message: "该产品强制要求 {cert} 认证件，当前件不具备。"
+    owner: 质量负责人
+    notes: 认证是外部规则，无出路设计（不可特采）
+
+  - id: G-C03
+    name: 合同月份管控
+    type: compliance
+    rule: 订单合同月份为 M 月时，不得派工到 M 月之前执行
+    when: 派工提交时
+    action: hard_block
+    release: 走审批（如客户同意提前交货）
+    error_message: "{month} 月订单不能派到 {target_month} 月执行。"
+    owner: 生产部长
+
+  # ── 质量/工艺类（第 3 批上线） ──────────────────────────────
+  - id: G-Q01
+    name: 前置条件未确认不许批量报工
+    type: quality
+    rule: 首件/开工判定未确认时，该工序的批量报工被拦截
+    when: 批量报工提交时
+    action: hard_block
+    release: 先完成首件确认（正常路径）
+    error_message: "本工序首件尚未确认，不能批量报工。请先完成首件检验。"
+    owner: 质检员
+    metrics: [首件拦截次数, 批量不良下降率]
+    notes: "批量不良拦在第一道"
+
+  - id: G-Q02
+    name: 换料匹配校验
+    type: quality
+    rule: 换卷/换料时，新料必须与原料同规格同关键属性（如同宽度、同膜系/同材质）
+    when: 改单（换卷）提交时
+    action: hard_block + 红屏告警 + 语音告警
+    release: 核对规格后重新扫码
+    error_message: "新卷与原卷宽度/膜系不符，禁止上错料。"
+    owner: 质检员
+    notes: 现场扫错应立即停止并核对（禁止"大概是对的"式作业）
+
+  - id: G-Q03
+    name: 防超产（订单数量封顶）
+    type: quality
+    rule: 裁片/产出数量按订单数量封顶；超取预警
+    when: 报工时
+    action: warn（超取时）
+    release: 多产部分**强制按等级入库**，等待后续订单消化
+    error_message: "订单数量已封顶，多产 {qty} 件将按等级强制入库。"
+    owner: 生产部长
+    notes: 多产不入"无主库存"，保证每一片产出都有单可依、可核算
+
+  - id: G-Q04
+    name: 等级单向降级
+    type: quality
+    rule: 物料等级只允许 A→B→C 单向降级，禁止反向升级
+    when: 等级变更时
+    action: hard_block
+    release: 无（反向升级永久禁止）
+    owner: 质检员
+    audit: 降级历史**永久留痕**，供发货校验与成本核算使用
+
+  - id: G-Q05
+    name: 返工强制复检
+    type: quality
+    rule: 返工作业完成后强制生成复检任务
+    when: 返工完工时
+    action: hard_block（未复检不能流转下一工序）
+    release: 完成复检
+    owner: 质检员
+
+  # ── 管理规则类（第 4 批，需一把手背书） ──────────────────────
+  - id: G-M01
+    name: 信用额度与账期校验
+    type: management
+    rule: 新建订单时校验客户信用额度与账期；超额度拦截或需审批
+    when: 订单提交审批时
+    action: hard_block 或 soft_confirm（按企业政策）
+    release: 审批放行（销售总监/财务/总经理，按金额分级）
+    owner: 财务负责人
+    notes: 管理规则类争议最高，必须一把手签字后上线
+
+  - id: G-M02
+    name: 已报工数据冻结
+    type: management
+    rule: 已报工、已审核、已执行的数据不可直接修改
+    when: 任何修改尝试
+    action: hard_block
+    release: 通过改单 / 红冲 / 管理员流程处理，保留完整痕迹
+    owner: 系统管理员
+    notes: 数据完整性底线，不可放宽
+
+  - id: G-M03
+    name: 改单频次告警
+    type: management
+    rule: 单一工单改单次数超过 N 次（默认 3 次）触发告警
+    when: 改单提交时
+    action: warn
+    owner: 生产部长
+    metrics: [改单频次分布, 改单原因分类]
+
+  # ── 软校验类（软警告 + 二次确认） ────────────────────────────
+  - id: G-S01
+    name: 机联计数容差校验
+    type: quality
+    rule: 报工数量与机联计数偏差超过配置容差百分比时，弹二次确认
+    when: 报工提交时
+    action: soft_confirm
+    ui: 显示偏差百分比与报工合计，确认无误后再次长按提交
+    release: 确认即通过（不阻断）
+    owner: 系统管理员（容差在"机联设备"配置）
+    notes: |
+      软校验而非硬拦截——因为设备本身也会漂移，硬拦会瘫痪生产。
+      数据来源三态留痕：Manual / Auto / AutoModified（修正必填原因）。
+
+  - id: G-S02
+    name: 呆滞三档预警
+    type: management
+    rule: 未使用天数跨档（30/90/180）时进入相应预警档位
+    when: 定时扫描
+    action: warn（黄/橙/红三色）
+    owner: 生产部长 / 财务
+    notes: 呆滞物料不得退回原料库混放，走呆滞品仓分区管理
+
+  - id: G-S03
+    name: 数据陈旧标记
+    type: management
+    rule: 看板数据超过刷新周期未更新时显示"陈旧"标记
+    when: 看板渲染时
+    action: warn
+    owner: 系统管理员
+    notes: 避免例会口径争议
+
+# ── 闸门运行指标（上线后每月看） ──────────────────────────────
+gate_metrics:
+  - 拦截次数与原因分布      # 拦截多说明规则在生效；原因变化说明业务在变
+  - 放行（走审批）比例      # 过高说明规则不合理，需调阈值
+  - 绕过尝试次数            # 有人试图绕 → 查是流程问题还是规则问题
+  - 误拦投诉                # 每条都要复盘
