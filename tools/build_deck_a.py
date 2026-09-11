@@ -481,7 +481,7 @@ d.text(s, X3 + 0.30, 6.14, 11.5, 0.52, [L(
 
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ppt")
 os.makedirs(out, exist_ok=True)
-pptx_path = d.emit(os.path.join(out, "PPT-01-卷材制造执行系统-系统方案.pptx"))
+pptx_path = d.emit(os.path.join(out, "PPT-01-Roll-Material-MES-System-Proposal.pptx"))
 paths, probs = d.render("/tmp/prev_a")
 contact_sheet(paths, "/tmp/deck_a_sheet.png", cols=4, title="PPT-01 卷材制造执行系统 · 系统方案")
 print("pptx:", pptx_path)

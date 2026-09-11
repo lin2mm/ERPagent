@@ -23,15 +23,15 @@
 
 ```
 docs/
-├─ 00-总览与阅读指南.md              ← 你在这里
-├─ 01-案例精读-A-卷材制造执行系统.md   案例 A：五端 / 五层单据 / 17 态状态机 / 排产算法 / 硬闸门
-├─ 02-案例精读-B-非标门一体化方案.md   案例 B：八入口 / 五层架构 / 一码贯通 / 边缘节点 / 八周计划
-├─ 03-通用蓝图-从两案例提炼的可复用模式.md
+├─ 00-Overview-and-Reading-Guide.md              ← 你在这里
+├─ 01-Case-A-Roll-Material-MES.md   案例 A：五端 / 五层单据 / 17 态状态机 / 排产算法 / 硬闸门
+├─ 02-Case-B-Custom-Door-Integration.md   案例 B：八入口 / 五层架构 / 一码贯通 / 边缘节点 / 八周计划
+├─ 03-Blueprint-Reusable-Patterns.md
 │                                    两条业务主线的抽象、七个必答设计题、可复用资产库
-├─ 04-Agent工作流设计-能力地图与工程规范.md
+├─ 04-Agent-Workflow-Design.md
 │                                    Agent 在哪些环节、边界在哪、护栏怎么设、怎么评测
-├─ 05-新企业落地SOP-阶段化交付手册.md   0→7 阶段实战流程、双方配合清单、模板使用说明
-└─ 06-风险-验收与度量.md               风险表、真机验收清单、成功度量指标
+├─ 05-Delivery-SOP-for-New-Enterprise.md   0→7 阶段实战流程、双方配合清单、模板使用说明
+└─ 06-Risk-Acceptance-Metrics.md               风险表、真机验收清单、成功度量指标
 
 templates/        可填空的模板，直接拿去用（企业画像 / 主线梳理 / 权限矩阵 / Agent 清单 / 冲刺议程 / 验收）
 spec/             机器可读规格（agents.yaml 智能体清单 / gates.yaml 硬闸门清单 / entities.yaml 主线实体）

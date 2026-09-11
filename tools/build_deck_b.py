@@ -635,7 +635,7 @@ d.text(s, X3 + 0.30, 6.00, 11.5, 0.68, [L(
 
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ppt")
 os.makedirs(out, exist_ok=True)
-pptx_path = d.emit(os.path.join(out, "PPT-02-非标定制品智能制造一体化方案.pptx"))
+pptx_path = d.emit(os.path.join(out, "PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx"))
 paths, probs = d.render("/tmp/prev_b")
 contact_sheet(paths, "/tmp/deck_b_sheet.png", cols=4,
               title="PPT-02 非标定制品智能制造一体化方案")

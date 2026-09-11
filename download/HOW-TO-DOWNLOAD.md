@@ -1,5 +1,10 @@
 # 下载说明 / How to download
 
+本目录只有两个文件：`ALL-MATERIALS.zip`（全部材料）和本说明。
+实际的 PPT 与预览图放在 `ppt/` 目录（文件名已全部改为英文，不会再显示 Unknown file）。
+
+# 下载说明 / How to download
+
 ## 中文名文件显示为 Unknown file？
 
 本仓库的原始文件名含中文，平台的 Diff / 文件面板无法解析，会显示 `Unknown file`。

@@ -26,8 +26,8 @@
 
 | 文件 | 内容 | 用途 |
 | --- | --- | --- |
-| `ppt/PPT-01-卷材制造执行系统-系统方案.pptx` | 案例 A 的系统方案：业务模式 → 五端 → 五层单据 → 状态机 → 追溯 → 闸门 → 算法 → 看板 → 验收 | 讲"系统长什么样、机制怎么设计" |
-| `ppt/PPT-02-非标定制品智能制造一体化方案.pptx` | 案例 B 的一体化方案：痛点账单 → 六项优势 → 五层架构 → 权限矩阵 → 端到端 → 八周计划 → 范围分层 → 对价清单 → 验收 | 讲"为什么值得做、怎么交付、要客户做什么" |
+| `ppt/PPT-01-Roll-Material-MES-System-Proposal.pptx` | 案例 A 的系统方案：业务模式 → 五端 → 五层单据 → 状态机 → 追溯 → 闸门 → 算法 → 看板 → 验收 | 讲"系统长什么样、机制怎么设计" |
+| `ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx` | 案例 B 的一体化方案：痛点账单 → 六项优势 → 五层架构 → 权限矩阵 → 端到端 → 八周计划 → 范围分层 → 对价清单 → 验收 | 讲"为什么值得做、怎么交付、要客户做什么" |
 | `ppt/preview/*.png` | 两份 PPT 的 18 页预览总图 | 无需 PowerPoint 即可通读 |
 
 两份 PPT 共用同一套母版与配色语义，**可拼成一套完整讲**：
@@ -42,21 +42,21 @@
 
 ```
 docs/
-├─ 00-总览与阅读指南.md
-├─ 01-案例精读-A-卷材制造执行系统.md
-├─ 02-案例精读-B-非标门一体化方案.md
-├─ 03-通用蓝图-从两案例提炼的可复用模式.md
-├─ 04-Agent工作流设计-能力地图与工程规范.md
-├─ 05-新企业落地SOP-阶段化交付手册.md
-└─ 06-风险-验收与度量.md
+├─ 00-Overview-and-Reading-Guide.md
+├─ 01-Case-A-Roll-Material-MES.md
+├─ 02-Case-B-Custom-Door-Integration.md
+├─ 03-Blueprint-Reusable-Patterns.md
+├─ 04-Agent-Workflow-Design.md
+├─ 05-Delivery-SOP-for-New-Enterprise.md
+└─ 06-Risk-Acceptance-Metrics.md
 
 templates/     可直接填写的交付模板
-├─ 01-企业画像与主线识别.md
-├─ 02-七道必答题答卷.md
-├─ 03-闸门清单与验收清单.md
-├─ 04-角色终端菜单矩阵.md
-├─ 05-双方配合清单与里程碑.md
-└─ 06-Agent清单与三层分离表.md
+├─ 01-Enterprise-Profile.md
+├─ 02-Seven-Design-Questions.md
+├─ 03-Gates-and-Acceptance.md
+├─ 04-Role-Terminal-Menu-Matrix.md
+├─ 05-Commitment-and-Milestones.md
+└─ 06-Agent-List-and-Separation.md
 
 spec/          机器可读规格
 ├─ agents.yaml     14 个 Agent 的完整规格（触发/输入/工具/输出/护栏/度量）
@@ -65,8 +65,8 @@ spec/          机器可读规格
 
 ppt/           两份成品 PPT（各 18 页）+ 18 页预览总图
 review/        两轮评分报告
-├─ 01-原方案评分报告.md   两份原方案按 7 维 100 分量表评分 + 转用价值评估
-└─ 02-PPT评分报告.md     两份 PPT 评分 + 与原方案逐维对照
+├─ 01-Source-Materials-Score.md   两份原方案按 7 维 100 分量表评分 + 转用价值评估
+└─ 02-PPT-Score.md     两份 PPT 评分 + 与原方案逐维对照
 
 tools/         生成与校验工具
 ├─ deckkit.py        声明式 PPTX 生成 + 预览渲染 + 溢出/越界检测

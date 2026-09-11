@@ -2,8 +2,8 @@
 
 > 评分对象：本轮产出的两份 PPT（各 18 页，16:9，已脱敏）
 >
-> - `ppt/PPT-01-卷材制造执行系统-系统方案.pptx` —— 对应原方案 A（操作手册）
-> - `ppt/PPT-02-非标定制品智能制造一体化方案.pptx` —— 对应原方案 B（一体化方案）
+> - `ppt/PPT-01-Roll-Material-MES-System-Proposal.pptx` —— 对应原方案 A（操作手册）
+> - `ppt/PPT-02-Custom-Door-Smart-Manufacturing-Plan.pptx` —— 对应原方案 B（一体化方案）
 >
 > 评分方法：沿用原方案评分的**统一交付物质量量表**（7 维 / 100 分），
 > 另加一层**演示文稿适配度量表**（5 项 / 50 分），因为 PPT 的成败标准与文档不同——

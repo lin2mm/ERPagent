@@ -1,9 +1,7 @@
 *.pyc
 .DS_Store
 .venv/
-/download/*.zip
-/ppt/*.zip
 __pycache__/
-!download/*.pptx
-!download/*.png
+/ppt/*.zip
+/download/*.zip
 !download/ALL-MATERIALS.zip
