@@ -12,6 +12,10 @@
 只保留**可迁移的结构、机制、规则、数字与交付方法**。
 分别称为 **案例 A**（卷材辊涂/裁片工厂）与 **案例 B**（非标定制门工厂）。
 
+**文件怎么拿**：会话期间打开「交付物下载页」（本地预览，点一下直接下载，不用 GitHub）——
+由 `tools/build_download_page.py` 生成、`tools/serve_downloads.py` 提供服务；
+长期存档与转发仍可用 `download/HOW-TO-DOWNLOAD.md` 里的 GitHub 直链。
+
 ---
 
 ## 这份知识库回答三个问题
@@ -95,8 +99,11 @@ templates/     可直接填写的交付模板
 └─ 07-Customer-Qualification-Checklist.md  售前筛选打分表（一票否决 + 双侧打分 + 定级）
 
 prospects/     目标企业线索池
-├─ Target-Companies.csv   28 家初筛名单（原始数据，脚本的唯一数据源）
-└─ Target-Companies.xlsx  同一份名单的 Excel 版（可筛选/排序/打印 + 评分口径 + 获客渠道）
+├─ Target-Companies.csv     28 家 × 22 列（原始数据，脚本的唯一数据源）
+├─ Target-Companies.xlsx    Excel 版：名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
+├─ Target-Companies.v1.csv  第一版名单备份（14 列，未含官网核实与联系方式）
+├─ verification.json        逐家官网核实记录（官网/主营/电话/邮箱/地址/结论/来源/核实日）
+└─ 备注：改名脚本 tools/merge_verification.py 可把 verification.json 并回 CSV（可反复执行）
 
 assets/        已脱敏的插图（去企业名后入库，供构建脚本引用）
 └─ case-b/     案例 B 原方案文档的 5 张架构图（arch-01 … arch-05）
@@ -121,7 +128,11 @@ tools/         生成与校验工具
 ├─ build_pitch_b.py  构建 PITCH-02（说服版 + 面谈版 · 案例 B）
 ├─ build_pdf.py      由同一份定义产出 PDF 与逐页 PNG（pitch | short | deck）
 ├─ redact_source_images.py  把原文档插图去企业名（同色同字号替换）+ 裁白边
-└─ build_prospect_xlsx.py   由 CSV 生成可下载的 Excel 名单（名单 / 评分口径 / 使用说明）
+├─ merge_verification.py    把官网核实结果并进名单 CSV（含优先级建议与触达路径）
+├─ build_prospect_xlsx.py   由 CSV 生成 Excel 名单（4 张表，含联系方式与修正清单）
+├─ build_download_page.py   生成 site/index.html —— 本地「点一下就下载」页面
+├─ serve_downloads.py       起本地静态站点（0.0.0.0:8000，/ 自动跳下载页）
+└─ build_zip.py             把成品打成一个 zip（download/ALL-MATERIALS.zip）
 ```
 
 ---
