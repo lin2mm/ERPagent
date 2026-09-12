@@ -6,7 +6,7 @@
     python tools/build_zip.py
 
 只打「成品」，不打源码工具与 git 相关文件：
-    README.md · docs/ · templates/ · spec/ · review/ · prospects/(csv+xlsx)
+    README.md · docs/ · templates/ · spec/ · review/ · prospects/(csv+xlsx) · interviews/
     ppt/*.pptx · ppt/preview/*.png · pdf/*.pdf
     download/<各 PNG 目录>/ · download/HOW-TO-DOWNLOAD.md
     assets/(已脱敏插图)
@@ -23,7 +23,7 @@ SKIP_DIRS = {"__pycache__", ".git"}
 
 def collect():
     files = ["README.md"]
-    for d in ("docs", "templates", "spec", "review", "prospects", "assets"):
+    for d in ("docs", "templates", "spec", "review", "prospects", "assets", "interviews"):
         base = os.path.join(ROOT, d)
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames[:] = [x for x in dirnames if x not in SKIP_DIRS]

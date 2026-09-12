@@ -36,6 +36,14 @@ GROUPS = [
         ("PITCH-01 卷材 MES · 8 页 PDF", "pdf/PITCH-01-Short-Roll-Material-MES.pdf", "不带封面，翻开就进正题"),
         ("PITCH-02 非标定制 · 8 页 PDF", "pdf/PITCH-02-Short-Custom-Door.pdf", ""),
     ]),
+    ("③b 半天走车间 · 访谈提纲（长三角 S/A 三家）", [
+        ("① 江苏赛康医疗设备（张家港）", "interviews/01-SAICOM-Medical-Half-Day-Walkthrough.md",
+         "案例 B · S 级 27 分 · 医疗设备与护理家具"),
+        ("② 江苏丽岛新材料（常州）", "interviews/02-Lidao-New-Material-Half-Day-Walkthrough.md",
+         "案例 A · A 级 25 分 · 彩涂铝卷辊涂，与案例 A 同工艺"),
+        ("③ 上海雅轩办公家具（嘉定）", "interviews/03-SpaceIn-Yaxuan-Half-Day-Walkthrough.md",
+         "案例 B · S 级 28 分 · 系统家具与工程交付，同城"),
+    ]),
     ("④ 客户筛选与打分", [
         ("筛选清单 · A4 打印版 PDF", "pdf/CHECKLIST-Customer-Screening.pdf", "两页，跑车间时拿在手上用"),
         ("筛选清单 · 可编辑模板", "templates/07-Customer-Qualification-Checklist.md", "含设计理由附录"),
