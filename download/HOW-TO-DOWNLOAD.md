@@ -2,6 +2,39 @@
 
 ---
 
+## 三个下载入口（任选其一）
+
+| 入口 | 具体位置 | 适合什么时候用 | 有效期 |
+| --- | --- | --- | --- |
+| **① 下载页**（最快） | 预览面板里的「**交付物下载页**」—— 本地静态站点，由 `tools/serve_downloads.py` 提供；页面里每个文件点一下就下载 | 现在就要拿到文件、不想登录 GitHub | 只在会话 / 沙箱存活期间有效 |
+| **② GitHub 仓库**（最稳） | 网页浏览：`https://github.com/lin2mm/ERPagent/tree/arena/01a08f24-erpagent`；单个文件直链：`https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/<仓库内路径>`；整仓打包：仓库页 → `Code` → `Download ZIP` | 长期存档、转发给别人、查历史版本 | 永久 |
+| **③ 工作区文件树** | 沙箱里的 `/home/user/ERPagent/…`（编辑器左侧文件面板）。每一份成品都在对应目录下：`pdf/` `ppt/` `prospects/` `docs/` `templates/` `review/` `download/` `site/` | 在编辑器里直接看 / 改 / 重跑脚本 | 只在沙箱存活期间有效（**会被重置，关键文件以 GitHub 为准**） |
+
+> 记一句就够：**GitHub 是唯一不会丢的地方**（分支 `arena/01a08f24-erpagent`），
+> 下载页与工作区都是临时副本。工作区被重置时，用
+> `git fetch origin arena/01a08f24-erpagent && git reset --hard FETCH_HEAD` 一条命令就能还原全部文件。
+
+---
+
+## 每个成品在 GitHub 的哪里
+
+| 想要的东西 | 仓库内路径 |
+| --- | --- |
+| 目标企业名单 Excel（28 家 × 22 列，4 张表） | `prospects/Target-Companies.xlsx` |
+| 同一份名单（CSV / 核实记录） | `prospects/Target-Companies.csv`、`prospects/verification.json` |
+| 老板版方案 PDF（16 / 19 页） | `pdf/PITCH-01-…-Boss-Briefing.pdf`、`pdf/PITCH-02-…-Boss-Briefing.pdf` |
+| 老板版可编辑 PPT | `ppt/PITCH-01-…-Boss-Briefing.pptx`、`ppt/PITCH-02-…-Boss-Briefing.pptx` |
+| 20 分钟面谈版（8 页） | `pdf/PITCH-01-Short-…pdf`、`pdf/PITCH-02-Short-…pdf` |
+| 机制版技术底稿（18 页 ×2） | `ppt/PPT-01-…pptx`、`ppt/PPT-02-…pptx`、`pdf/PPT-01.pdf`、`pdf/PPT-02.pdf` |
+| 客户筛选清单（A4 打印版） | `pdf/CHECKLIST-Customer-Screening.pdf` |
+| 预览总图（先看图再决定下不下） | `ppt/preview/*.png`、`download/*-slides-png/` |
+| 方法论文档（9 份） | `docs/00-…doc.md` … `docs/08-Prospect-Shortlist.md` |
+| 模板 / 规格 / 评分报告 | `templates/`、`spec/`、`review/` |
+| **一次全下**（zip，约 42 MB） | `download/ALL-MATERIALS.zip` |
+
+---
+
+
 ## 最快的下载方式：本地下载页（点一下就开始下载，不用 GitHub）
 
 预览里打开的那个页面就是下载页 —— **上面每个文件点一下就直接下载到你的电脑**，
