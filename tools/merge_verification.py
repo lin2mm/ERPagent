@@ -97,20 +97,26 @@ BASE_IDX = [0, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17, 18, 11, 20]
 def load_base():
     """读出名单的「原始列」——14 列直接可用；22 / 24 列只取原始列。
 
-    24 列版是 build_targets.py 组装的最终版（比 22 列多「区域」与「社媒」），
-    这里先剥掉那两列再取原始列，保证两种版本都能当输入。
+    24 / 25 列版是 build_targets.py 组装的最终版（比 22 列多「区域」「社媒」「交叉验证」），
+    这里先剥掉这些列再取原始列，保证各版本都能当输入。
     """
     rows = list(csv.reader(open(CUR, encoding="utf-8-sig")))
     head, data = rows[0], rows[1:]
     if len(head) == 14:
         return data
+    if len(head) == 25:
+        # 剥掉「区域」(2)、「交叉验证」(9)、「社媒」(13)；触达路径里的「｜补充：」也剥掉
+        keep = [i for i in range(25) if i not in (2, 9, 13)]
+        head = [head[i] for i in keep]
+        data = [[r[i] for i in keep] for r in data]
+        data = [[x.split("｜补充：")[0] if i == 11 else x for i, x in enumerate(r)] for r in data]
     if len(head) == 24:
         keep = [i for i in range(24) if i not in (2, 12)]
         head = [head[i] for i in keep]
         data = [[r[i] for i in keep] for r in data]
     if len(head) == 22:
         return [[r[i] for i in BASE_IDX] for r in data]
-    raise SystemExit(f"无法识别的名单列数：{len(head)}（应为 14 / 22 / 24）")
+    raise SystemExit(f"无法识别的名单列数：{len(head)}（应为 14 / 22 / 24 / 25）")
 
 
 def main():
@@ -152,7 +158,7 @@ def main():
     miss = [r[2] for r in out[1:] if not r[5] or r[5].startswith("（")]
     print("未核实官网：", miss if miss else "无")
 
-    # 接着把「区域 / 社媒」与新增区域客户拼回去，产出最终 24 列名单
+    # 接着把「区域 / 交叉验证 / 社媒」与新增客户拼回去，产出最终 25 列名单
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import build_targets
     build_targets.build()

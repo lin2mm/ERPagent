@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""由 prospects/Target-Companies.csv 生成可下载的 Excel 名单（v3 · 含重点区域）。
+"""由 prospects/Target-Companies.csv 生成可下载的 Excel 名单（v4 · 含重点区域 + 跨行业）。
 
     /tmp/v/bin/python tools/build_prospect_xlsx.py
 
 产出 prospects/Target-Companies.xlsx，五张表：
     重点区域速览      —— 长三角 / 珠三角 单独一张，按分数排序，看这一张就够
-    名单              —— 44 家 × 24 列（含官网核实、联系方式、社媒、触达路径）
-    本轮核实纪要      —— 核实方法、结果统计、修正清单 + 本轮新增区域客户
+    名单              —— 59 家 × 25 列（含官网核实、交叉验证、联系方式、社媒、触达路径）
+    本轮核实纪要      —— 核实方法、结果统计、修正清单 + 两批新增客户
     评分口径          —— E1–E7 / B1–B7 / 定级线 / 修正规则
     使用说明与获客渠道
 
 CSV 是唯一数据源：改名单改 CSV（或用 tools/build_targets.py 重新组装），再跑本脚本。
 """
 import csv
+import json
 import os
 import re
 
@@ -27,10 +28,10 @@ INK, BODY, MUTED, LINE, SOFT = "#0F1B2D", "#33415C", "#7A8699", "#D8DEE9", "#F2F
 TIER_STYLE = {"S": "#1E6F50", "A": "#2C5AA0", "B": "#5A6472", "C": "#9AA3B0"}
 REGION_STYLE = {"长三角": "#0E6B6B", "珠三角": "#8A5A0B"}
 
-# 24 列宽度
-WIDTHS = [6, 32, 12, 26, 8, 11, 24, 38, 42, 22, 18, 26, 26, 42, 12, 12, 8, 7, 34, 34, 26, 26, 9, 10]
-WRAP_COLS = {1, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21}
-CENTER_COLS = {0, 2, 4, 5, 16, 17, 22, 23}
+# 25 列宽度（第 10 列 = 交叉验证）
+WIDTHS = [6, 32, 12, 26, 8, 11, 24, 38, 42, 42, 22, 18, 26, 26, 42, 12, 12, 8, 7, 34, 34, 26, 26, 9, 10]
+WRAP_COLS = {1, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22}
+CENTER_COLS = {0, 2, 4, 5, 17, 18, 23, 24}
 
 
 def fmt(wb):
@@ -84,18 +85,18 @@ def sheet_list(wb, f, rows):
                 cell = rfmt
             elif c == 1:
                 cell = f["adv"]
-            elif c == 5 and val.startswith("http"):
+            elif c == 6 and val.startswith("http"):
                 ws.write_url(r, c, val, f["link"], val)          # 官网可点
                 continue
             elif c in CENTER_COLS:
                 cell = f["num"]
-            if c == 10:                                            # 邮箱可点
+            if c == 11:                                            # 邮箱可点
                 one = re.fullmatch(r"[\w.+-]+@[\w-]+\.[\w.]+", val.strip())
                 if one:
                     ws.write_url(r, c, "mailto:" + val.strip(), f["link"], val.strip())
                     continue
             ws.write(r, c, val, cell)
-        ws.set_row(r, 104)
+        ws.set_row(r, 112)
     ws.freeze_panes(1, 3)
     ws.autofilter(0, 0, len(rows) - 1, len(head) - 1)
     ws.set_landscape()
@@ -118,8 +119,12 @@ def sheet_focus(wb, f, rows):
     for i, (_, w) in enumerate(cols, start=1):
         ws.set_column(i, i, w)
     ws.write(0, 0, "长三角 · 珠三角 重点客户（按初筛分排序）", f["title"])
-    ws.write(1, 0, "这两片区域单列一页：长三角 19 家（上海 / 江苏 / 浙江）+ 珠三角 14 家（广州 / 佛山 / 东莞 / 深圳 / 江门 / 清远）。"
-                   "分数是「企业侧」公开信息估算分（满分 35），老板侧 35 分必须面谈才能打。全量 44 家见「名单」表。", f["note"])
+    n_yd = sum(1 for r in rows[1:] if r[idx["区域"]] == "长三角")
+    n_zs = sum(1 for r in rows[1:] if r[idx["区域"]] == "珠三角")
+    ws.write(1, 0, f"这两片区域单列一页：长三角 {n_yd} 家（上海 / 江苏 / 浙江）+ 珠三角 {n_zs} 家"
+                   "（广州 / 佛山 / 东莞 / 深圳 / 江门 / 清远 / 中山）。"
+                   "分数是「企业侧」公开信息估算分（满分 35），老板侧 35 分必须面谈才能打。"
+                   f"全量 {len(rows) - 1} 家见「名单」表。", f["note"])
     ws.set_row(1, 30)
     for c, (name, _) in enumerate(cols, start=1):
         ws.write(3, 0, "#", f["band"])
@@ -189,7 +194,26 @@ NEW_THIS_ROUND = [
 ]
 
 
-def sheet_verify(wb, f):
+NEW_WAVE2 = [
+    ("长三角", "线缆", "A", "26", "无锡明珠电缆（宜兴官林）", "电力/船用缆，官网两处口径打架（400/500 人、20/30 亿）→ 电话核产能最自然"),
+    ("长三角", "涂布薄膜", "B", "21", "昆山新博皓薄膜（苏州昆山）", "2 流延 + 5 吹膜 + 4 涂布；官网地址与邮箱栏均有误，涂布分切与案例 A 同构"),
+    ("长三角", "涂布薄膜", "C", "19", "苏州甲腾包装材料", "德国 1750mm 涂布机 + 淋膜机；信息薄，作案例 A 轻量样板"),
+    ("长三角", "精密钣金", "A", "24", "苏州荣科精密机械（吴中）", "官网自述即「多品种小批量」；通快/百超/AMADA×4，程序与图纸版本管理是痛点"),
+    ("珠三角", "电梯", "B", "25", "快意电梯（东莞清溪）", "A 股 002774、员工 1654、年产 4.7 万台：非标电梯 + 全国安装维保，作标杆不作试点"),
+    ("珠三角", "电梯", "C", "23", "菱王电梯（佛山南海）", "2020-12 已并入美的楼宇科技，决策归集团 → 只谈狮山单厂"),
+    ("珠三角", "线缆", "B", "24", "广东珠江电线电缆（佛山南海）", "家装线上千规格 + 电商/出口；痛点在经销商窜货与对账，不在车间"),
+    ("珠三角", "玻璃深加工", "A", "24", "东莞智联玻璃（常平）", "家电面板玻璃 25 年、1 万㎡、约 200 人：色差与划伤索赔是现成的钱"),
+    ("珠三角", "玻璃深加工", "B", "22", "广东海博特种玻璃（顺德陈村）", "景区栈道/艺术玻璃高度非标，破损返工损失大；自有工序比例待核"),
+    ("珠三角", "实验室装备", "B", "23", "广东天赐湾 TMOON（佛山三水）", "实验室总包 + 非标台柜；双官网双地址，签约主体要先确认"),
+    ("珠三角", "实验室装备", "C", "20", "广州卓平实验室设备", "项目制 + 钢制柜体；规模小，先判断是制造型还是施工型"),
+    ("珠三角", "钢结构", "B", "22", "江门富生钢结构（开平）", "2 条轻钢线、年产 3 万吨；集团 3000 万 vs 项目公司 50 万，主体待核"),
+    ("珠三角", "钢结构", "B", "23", "广东众工钢构（佛山高明）", "3 万㎡基地、年 2 万吨、出口 40 国：出口装箱清单零差错是切入点"),
+    ("珠三角", "精密五金", "A", "26", "东莞龙旺五金（长安）", "3 万㎡、500+ 人、700+ 台设备、IATF16949：多品种小批量 + 汽车级追溯"),
+    ("珠三角", "装配式建筑", "B", "22", "广东领盛装配式（顺德/鹤山）", "中国联塑成员企业、10 万㎡基地、出口欧美；模块齐套是命门"),
+]
+
+
+def sheet_verify(wb, f, rows):
     ws = wb.add_worksheet("本轮核实纪要")
     ws.set_column(0, 0, 30)
     ws.set_column(1, 1, 100)
@@ -198,10 +222,18 @@ def sheet_verify(wb, f):
                    "官网写的口径优先于黄页与推广软文；核不上的一律写「待核实」，不做断言。", f["note"])
     ws.set_row(1, 30)
     ws.write(3, 0, "名单现状", f["sect"])
-    stats = [("覆盖企业", "44 家（长三角 19 · 珠三角 14 · 其他 11）"),
-             ("拿到官网链接", "33 家"), ("拿到企业电话", "41 家"),
-             ("拿到社媒入口", "26 家（公众号 / 抖音 / 微博 / 1688 / 视频号）"),
-             ("本轮新增", "16 家（长三角 8 + 珠三角 8，全部完成官网反向验证与联系方式细化）"),
+    idx = {h: i for i, h in enumerate(rows[0])}
+    body = rows[1:]
+    n_yd = sum(1 for x in body if x[idx["区域"]] == "长三角")
+    n_zs = sum(1 for x in body if x[idx["区域"]] == "珠三角")
+    stats = [("覆盖企业", f"{len(body)} 家（长三角 {n_yd} · 珠三角 {n_zs} · 其他 {len(body) - n_yd - n_zs}）"),
+             ("拿到官网链接", f"{sum(1 for x in body if x[idx['官网（本轮核实）']].startswith('http'))} 家"),
+             ("拿到企业电话", f"{sum(1 for x in body if x[idx['联系电话']].strip())} 家"),
+             ("拿到企业邮箱", f"{sum(1 for x in body if x[idx['邮箱']].strip())} 家"),
+             ("拿到社媒入口", f"{sum(1 for x in body if x[idx['社媒（公众号 / 抖音 / 1688 / 其他）']].strip() and not x[idx['社媒（公众号 / 抖音 / 1688 / 其他）']].startswith('（'))} 家（公众号 / 抖音 / 微博 / 1688 / 国际站 / 视频号 / 行业平台店）"),
+             ("交叉验证覆盖", f"{sum(1 for x in body if x[idx['交叉验证（多源对照）']].strip() and not x[idx['交叉验证（多源对照）']].startswith('（'))} 家（每条至少两源对照，冲突写「两版」）"),
+             ("本批新增（一）", "16 家（长三角 8 + 珠三角 8，同行业纵深：医疗家具 / 彩涂铝 / 展示道具 / 门业）"),
+             ("本批新增（二）", "15 家（长三角 4 + 珠三角 11，跨行业横向扩展：电梯 / 线缆 / 涂布薄膜 / 玻璃深加工 / 实验室装备 / 钢结构 / 精密五金 / 装配式）"),
              ("结论变化（上一轮）", "3 家升档（益德 / 香乡 / 大兆）、5 家降档、2 家建议移出")]
     r = 4
     for a, b in stats:
@@ -250,6 +282,48 @@ def sheet_verify(wb, f):
                    "发订单和产能说明「缺单」，发资质与中标说明「在投标」，发设备与招聘说明「在扩产」。"
                    "看出来再打电话，第一句话就能说到点上。没采到社媒的写「待补」，下一轮补。", f["note"])
     ws.set_row(r, 60)
+
+
+def sheet_new(wb, f, rows, w1, w2):
+    """两批新增速览：名单取自 CSV，顺序与行业标注由 delta JSON 决定。"""
+    ws = wb.add_worksheet("两批新增速览")
+    idx = {h: i for i, h in enumerate(rows[0])}
+    by_name = {x[idx["企业名称"]]: x for x in rows[1:]}
+    widths = [5, 26, 9, 9, 9, 30, 14, 70]
+    for i, w in enumerate(widths):
+        ws.set_column(i, i, w)
+    ws.write(0, 0, "两批新增客户（共 31 家）", f["title"])
+    r = 2
+    for title, names, note in (
+        ("本批（一）· 同行业纵深 16 家 —— 在原有行业集内做深（医疗家具 / 彩涂铝 / 展示道具 / 门业 / 实验室）", w1,
+         "长三角 8 + 珠三角 8；全部完成官网反向验证、联系方式细化与多源交叉验证。"),
+        ("本批（二）· 跨行业扩展 15 家 —— 跳出原有行业集（电梯 / 线缆 / 涂布薄膜 / 玻璃深加工 / 实验室装备 / 钢结构 / 精密五金 / 装配式）", w2,
+         "长三角 4 + 珠三角 11；行业不设限，只按「非标 + 齐套 + 追溯」三条硬标准挑。"),
+    ):
+        ws.write(r, 0, title, f["sect"])
+        r += 1
+        ws.write(r, 0, note, f["note"])
+        r += 1
+        for c, h in enumerate(("序", "企业", "区域", "优先级", "初筛分", "行业细分", "城市", "一句话（为什么挑它）"), start=0):
+            ws.write(r, c, h, f["band"])
+        r += 1
+        for n, name in enumerate(names, start=1):
+            row = by_name.get(name)
+            if row is None:
+                print("  ! 两批新增速览跳过（CSV 里没有）：", name)
+                continue
+            ws.write(r, 0, n, f["num"])
+            ws.write(r, 1, name, f["note"])
+            ws.write(r, 2, row[idx["区域"]], f["note"])
+            ws.write(r, 3, row[idx["优先级"]], f["note"])
+            ws.write(r, 4, row[idx["初筛分(企业侧/35)"]], f["num"])
+            ws.write(r, 5, row[idx["行业细分"]], f["note"])
+            ws.write(r, 6, row[idx["城市"]], f["note"])
+            ws.write(r, 7, row[idx["建议切入点"]], f["note"])
+            ws.set_row(r, 30)
+            r += 1
+        r += 2
+    return ws
 
 
 def sheet_rubric(wb, f):
@@ -373,12 +447,16 @@ def sheet_howto(wb, f):
 
 def main():
     rows = list(csv.reader(open(CSV, encoding="utf-8-sig")))
-    assert len(rows[0]) == 24, f"CSV 应为 24 列，当前 {len(rows[0])} 列（先跑 tools/build_targets.py）"
+    j = lambda p: [x["企业名称"] for x in json.load(open(p, encoding="utf-8"))["企业"]]
+    w1 = j(os.path.join(ROOT, "prospects", "delta-prospects.json"))
+    w2 = j(os.path.join(ROOT, "prospects", "delta-prospects-2.json"))
+    assert len(rows[0]) == 25, f"CSV 应为 25 列，当前 {len(rows[0])} 列（先跑 tools/build_targets.py）"
     wb = xlsxwriter.Workbook(OUT)
     f = fmt(wb)
     sheet_focus(wb, f, rows)
     sheet_list(wb, f, rows)
-    sheet_verify(wb, f)
+    sheet_new(wb, f, rows, w1, w2)
+    sheet_verify(wb, f, rows)
     sheet_rubric(wb, f)
     sheet_howto(wb, f)
     wb.close()

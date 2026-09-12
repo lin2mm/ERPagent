@@ -20,8 +20,8 @@
 
 | 想要的东西 | 仓库内路径 |
 | --- | --- |
-| 目标企业名单 Excel（28 家 × 22 列，4 张表） | `prospects/Target-Companies.xlsx` |
-| 同一份名单（CSV / 核实记录） | `prospects/Target-Companies.csv`、`prospects/verification.json` |
+| 目标企业名单 Excel（59 家 × 25 列，6 张表） | `prospects/Target-Companies.xlsx` |
+| 同一份名单（CSV / 核实与交叉验证记录） | `prospects/Target-Companies.csv`、`prospects/verification.json`、`prospects/cross-check.json` |
 | 老板版方案 PDF（16 / 19 页） | `pdf/PITCH-01-…-Boss-Briefing.pdf`、`pdf/PITCH-02-…-Boss-Briefing.pdf` |
 | 老板版可编辑 PPT | `ppt/PITCH-01-…-Boss-Briefing.pptx`、`ppt/PITCH-02-…-Boss-Briefing.pptx` |
 | 20 分钟面谈版（8 页） | `pdf/PITCH-01-Short-…pdf`、`pdf/PITCH-02-Short-…pdf` |
@@ -54,20 +54,23 @@
 ## 本次新增 ①：目标企业名单 Excel 版（可直接筛选 / 排序 / 打印）
 
 ```text
-prospects/Target-Companies.xlsx          （50 KB · 5 张表 · 44 家 × 24 列）
+prospects/Target-Companies.xlsx          （72 KB · 6 张表 · 59 家 × 25 列）
 prospects/Target-Companies.csv           （同一份数据的通用格式）
 prospects/verification.json              （原有 28 家核实记录）
-prospects/delta-prospects.json           （本轮新增 16 家：长三角 8 + 珠三角 8 的完整字段）
+prospects/cross-check.json               （原有 28 家的交叉验证文字：第 10 列的数据源）
+prospects/delta-prospects.json           （第一批新增 16 家：长三角 8 + 珠三角 8）
+prospects/delta-prospects-2.json         （第二批新增 15 家：跨 8 个行业）
 interviews/01–03-…-Half-Day-Walkthrough.md（半天走车间提纲：赛康医疗 / 丽岛新材 / 上海雅轩）
 ```
 
-五张表：
+六张表：
 
 | 工作表 | 里面是什么 |
 | --- | --- |
-| **重点区域速览** | **长三角 19 家 + 珠三角 14 家**，按初筛分排序，一行一家：城市 / 行业 / 适配案例 / 分数 / 优先级建议 / 电话 / 社媒 / 触达路径 —— 只看这一张就能开始打电话 |
-| **名单** | 44 家 × **24 列**：优先级 / **优先级建议（本轮核实的结论）** / 企业名称 / 省·市 / **官网（已核实）** / **官网主营（反向验证）** / **验证结论与修正** / **联系电话** / **邮箱** / **详细地址** / **触达路径（细化到找谁、打哪个号）** / 行业细分 / 主营业务 / 适配案例 / 初筛分 / 成功面 / 失败面（待核实）/ 切入点 / 来源 / 可靠度 / 核实日期。冻结表头 + 筛选 + A4 横向排版，可直接打印 |
-| **本轮核实纪要** | 两轮合记：核实方法（只认官网与工商公示，软文不作数）、结果统计（44 家中拿到官网 33 家 / 电话 41 家 / 社媒 26 家）、**本轮新增 16 家一览**、上一轮 12 条修正清单，以及打电话的三条规矩 + 社媒怎么用 |
+| **重点区域速览** | **长三角 23 家 + 珠三角 25 家**，按初筛分排序，一行一家：城市 / 行业 / 适配案例 / 分数 / 优先级建议 / 电话 / 社媒 / 触达路径 —— 只看这一张就能开始打电话 |
+| **名单** | 59 家 × **25 列**：优先级 / **优先级建议** / 区域 / 企业名称 / 省·市 / **官网（已核实）** / **官网主营（反向验证）** / **验证结论与修正** / **交叉验证（多源对照）** / **联系电话** / **邮箱** / **详细地址** / **社媒** / **触达路径（细化到找谁、打哪个号）** / 行业细分 / 主营业务 / 适配案例 / 初筛分 / 成功面 / 失败面（待核实）/ 切入点 / 来源 / 可靠度 / 核实日期。冻结表头 + 筛选 + A4 横向排版，可直接打印 |
+| **两批新增速览** | 两轮新进的 **31 家**：同行业纵深 16 家 + 跨行业扩展 15 家（电梯 / 线缆 / 涂布薄膜 / 玻璃深加工 / 实验室装备 / 钢结构 / 精密五金 / 装配式），一行一家：区域 / 优先级 / 分数 / 行业 / 城市 / 切入点 |
+| **本轮核实纪要** | 三轮合记：核实方法（只认官网与工商公示，软文不作数）、结果统计（59 家中拿到官网 48 家 / 电话 56 家 / 邮箱 45 家 / 社媒 49 家 / **交叉验证 59 家全覆盖**）、两批新增一览、上一轮 12 条修正清单，以及打电话的三条规矩 + 社媒怎么用 |
 | **评分口径** | 企业侧 E1–E7（35 分）与老板侧 B1–B7（35 分）的打分标准、S/A/B/C 定级线、两条修正规则 |
 | **使用说明与获客渠道** | 三步用法 + 四种持续获客渠道 + 免责与保密说明 |
 
@@ -202,18 +205,24 @@ templates/07-Customer-Qualification-Checklist.md    可编辑版（Markdown）
 
 ---
 
-## 本次新增：目标企业名单（28 家初筛）
+## 本次新增：目标企业名单（59 家初筛）
 
 按 `templates/07` 的打分口径对公开信息做初筛，得出的**线索池**。
 每家企业都写了**成功面（为什么值得谈）**与**失败面（要核实什么）**：
 
 ```
 docs/08-Prospect-Shortlist.md            完整名单 + 评分速览 + 详解 + 获客渠道
-prospects/Target-Companies.csv           28 家表格（Excel / Numbers 可直接打开）
+prospects/Target-Companies.csv           59 家表格（Excel / Numbers 可直接打开）
 ```
 
-构成：**44 家**（长三角 19 · 珠三角 14 · 其他 11），S 级 6 家 · A 级 17 家 · B 级 17 家 · C 级 4 家，
-覆盖卷材加工（案例 A）、非标门/防火门、医疗与实验室家具、展示道具、集成房屋（案例 B）。
+构成：**59 家**（长三角 23 · 珠三角 25 · 其他 11），S 级 6 家 · A 级 22 家 · B 级 24 家 · C 级 7 家，
+覆盖卷材加工与涂布薄膜（案例 A 系）、非标门/防火门、医疗与实验室家具、展示道具、集成房屋，
+以及本轮新扩的电梯、线缆、玻璃深加工、钢结构、精密五金、装配式建筑（案例 B 系）。
+
+**交叉验证（本版新增列）**：59 家全覆盖，每家至少两个来源对照（官网 ∩ 工商公示 / 上市公司披露 /
+行业榜单 / 权威媒体 / 电商工厂档案 / 黄页），对不上的写「两版」并进「失败面·待核实」——
+不做调和、不取平均。典型例子：快意电梯「1987 创立」vs 工商 1998；明珠电缆官网两页给出两套人数与产能；
+天赐湾两个官网两套热线；南粤防火门两个官网两套投资与厂房口径。
 
 **走访提纲（新）**：`interviews/` 里 3 份 —— 从长三角 S/A 里挑的赛康医疗（S·27）、丽岛新材（A·25·与案例 A 同工艺）、
 上海雅轩（S·28·同城）。每份含：出门前要背的 3 个数字、半天时间表（分钟级）、车间观察点（合格/不合格判据）、
@@ -342,7 +351,7 @@ https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/ppt/PPT-02-Custom
 # 目标客户筛选清单（A4 打印版）
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/pdf/CHECKLIST-Customer-Screening.pdf
 
-# 目标企业名单（28 家初筛）
+# 目标企业名单（59 家初筛）
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/prospects/Target-Companies.xlsx
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/prospects/Target-Companies.csv
 https://github.com/lin2mm/ERPagent/raw/arena/01a08f24-erpagent/docs/08-Prospect-Shortlist.md

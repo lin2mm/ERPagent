@@ -15,13 +15,41 @@ import zipfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 OUT = os.path.join(ROOT, "site", "index.html")
 
+CSV = os.path.join(ROOT, "prospects", "Target-Companies.csv")
+XLSX = os.path.join(ROOT, "prospects", "Target-Companies.xlsx")
+
+
+def prospect_stats():
+    """名单口径实时读 CSV —— 文档里的数字不再靠手写，避免落后于数据。"""
+    try:
+        import csv as _csv
+        rows = list(_csv.reader(open(CSV, encoding="utf-8-sig")))
+        head, body = rows[0], rows[1:]
+        tiers = {}
+        for r in body:
+            tiers[r[0]] = tiers.get(r[0], 0) + 1
+        t = " · ".join(f"{k} 级 {tiers[k]}" for k in "SABC" if k in tiers)
+        return f"{len(body)} 家 × {len(head)} 列（{t}）"
+    except Exception:
+        return "目标企业名单"
+
+
+def xlsx_sheets():
+    try:
+        with zipfile.ZipFile(XLSX) as z:
+            return z.read("xl/workbook.xml").decode("utf-8").count("<sheet ")
+    except Exception:
+        return 0
+
+
 GROUPS = [
     ("① 客户名单（先看这个）", [
         ("目标企业名单 · Excel", "prospects/Target-Companies.xlsx",
-         "28 家初筛名单；三张表：名单 / 评分口径 / 使用说明与获客渠道；表头冻结 + 筛选已开"),
-        ("目标企业名单 · CSV", "prospects/Target-Companies.csv", "同一份数据的通用格式"),
+         f"{prospect_stats()}；{xlsx_sheets()} 张表：重点区域速览 / 名单 / 两批新增速览 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道；表头冻结 + 筛选已开"),
+        ("目标企业名单 · CSV", "prospects/Target-Companies.csv",
+         f"{prospect_stats()}，含区域 / 交叉验证 / 社媒 / 触达路径；通用格式，Excel 与 Numbers 可直接打开"),
         ("目标企业名单 · 详解文档", "docs/08-Prospect-Shortlist.md",
-         "评分速览 + 逐家成功面 / 失败面 / 切入点 + 获客渠道"),
+         "评分速览 + 逐家成功面 / 失败面 / 切入点 + 交叉验证与获客渠道"),
     ]),
     ("② 老板版方案（说服用，含系统实景图）", [
         ("PITCH-02 非标定制 · 老板版 PDF", "pdf/PITCH-02-Custom-Door-Boss-Briefing.pdf",

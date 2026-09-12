@@ -104,13 +104,15 @@ interviews/    3 份「半天走车间」访谈提纲（各有 10 节：出门�
 └─ 03-SpaceIn-Yaxuan-Half-Day-Walkthrough.md      上海雅轩（S·28·同城）
                车间观察点与判据 / 按角色的问题清单 / 现场算账口径 / 红线 / 48 小时动作 / 复盘判定）
 
-prospects/     目标企业线索池（44 家：长三角 19 · 珠三角 14 · 其他 11）
-├─ Target-Companies.csv       44 家 × 24 列（唯一数据源：原始列 + 官网核实 + 联系方式 + 区域 + 社媒）
-├─ Target-Companies.xlsx      Excel 版（5 张表）：重点区域速览 / 名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
+prospects/     目标企业线索池（59 家：长三角 23 · 珠三角 25 · 其他 11）
+├─ Target-Companies.csv       59 家 × 25 列（唯一数据源：原始列 + 官网核实 + 联系方式 + 区域 + 交叉验证 + 社媒）
+├─ Target-Companies.xlsx      Excel 版（6 张表）：重点区域速览 / 名单 / 两批新增速览 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
 ├─ verification.json          原有 28 家的官网核实记录（官网/主营/电话/邮箱/地址/结论/来源/核实日）
-├─ delta-prospects.json       本轮新增 16 家（长三角 8 + 珠三角 8）的完整字段
+├─ cross-check.json           原有 28 家的「交叉验证（多源对照）」文字（第 10 列的数据源）
+├─ delta-prospects.json       第一批新增 16 家（长三角 8 + 珠三角 8）的完整字段
+├─ delta-prospects-2.json     第二批新增 15 家（跨 8 个行业：电梯/线缆/涂布薄膜/玻璃/实验室/钢构/五金/装配式）
 ├─ regions-social.json        原有 28 家的「区域」与「社媒」两列
-└─ 备注：tools/merge_verification.py（核实结果并回）与 tools/build_targets.py（组装最终 24 列名单）都可反复执行
+└─ 备注：tools/merge_verification.py（核实结果并回）与 tools/build_targets.py（组装最终 25 列名单）都可反复执行
 
 assets/        已脱敏的插图（去企业名后入库，供构建脚本引用）
 └─ case-b/     案例 B 原方案文档的 5 张架构图（arch-01 … arch-05）
@@ -137,12 +139,33 @@ tools/         生成与校验工具
 ├─ build_pdf.py      由同一份定义产出 PDF 与逐页 PNG（pitch | short | deck）
 ├─ redact_source_images.py  把原文档插图去企业名（同色同字号替换）+ 裁白边
 ├─ merge_verification.py    把官网核实结果并进名单（跑完自动接着跑 build_targets）
-├─ build_targets.py         组装最终名单：加「区域」「社媒」+ 并入长三角 / 珠三角 16 家
-├─ build_prospect_xlsx.py   由 CSV 生成 Excel 名单（5 张表，首表即重点区域速览）
+├─ build_targets.py         组装最终名单：加「区域」「交叉验证」「社媒」+ 并入两批新增 31 家
+├─ build_prospect_xlsx.py   由 CSV 生成 Excel 名单（6 张表，首表即重点区域速览）
 ├─ build_download_page.py   生成 site/index.html —— 本地「点一下就下载」页面
 ├─ serve_downloads.py       起本地静态站点（0.0.0.0:8000，/ 自动跳下载页）
 └─ build_zip.py             把成品打成一个 zip（download/ALL-MATERIALS.zip）
 ```
+
+### 环境准备（工具链可复现）
+
+依赖只声明在根目录 `pyproject.toml`（三个运行依赖：`python-pptx` / `Pillow` / `xlsxwriter`），
+仓库本身不是 Python 包，装依赖不会安装任何模块：
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install .              # 或：pip install -e .  ·  校验用加 [verify] 装 openpyxl
+```
+
+装完即可在这个环境里跑全部工具，例如名单链路：
+
+```bash
+python tools/build_targets.py          # 三源（CSV + 三份 JSON）→ 25 列名单
+python tools/build_prospect_xlsx.py    # → Excel（6 张表）
+python tools/build_download_page.py    # → site/index.html
+python tools/build_zip.py              # → download/ALL-MATERIALS.zip
+```
+
+> 名单链路可反复执行：`build_targets.py` 跑两次结果完全一致（幂等），改完数据直接重跑即可。
 
 ---
 

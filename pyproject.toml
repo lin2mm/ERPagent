@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "erpagent-toolchain"
+version = "0.1.0"
+description = "ERPagent 交付物工具链的运行环境：PPTX / PDF / 预览图 / 名单 Excel / 下载页 / 交付 zip"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "python-pptx>=0.6.21",
+    "Pillow>=9.0.0",
+    "xlsxwriter>=3.0.0",
+]
+
+[project.optional-dependencies]
+# 只在校验时用（读回 xlsx 抽查表头 / 超链接 / 行数），生成流程本身不需要
+verify = ["openpyxl>=3.1.0"]
+
+# 仓库不是 Python 包：只声明依赖，不安装任何模块（tools/ 用路径直接调用）
+[tool.setuptools]
+packages = []

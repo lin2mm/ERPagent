@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""组装最终目标企业名单：prospects/Target-Companies.csv（24 列）
+"""组装最终目标企业名单：prospects/Target-Companies.csv（25 列）
 
     /tmp/v/bin/python tools/build_targets.py
 
 数据来源（三份，各管一段）：
   · prospects/Target-Companies.csv   —— 上一版名单（14 / 22 / 24 列都能吃），提供「原始列」
   · prospects/regions-social.json    —— 原有 28 家的「区域」与「社媒」（含少量触达补充）
-  · prospects/delta-prospects.json   —— 本轮新增的长三角 / 珠三角 16 家（字段完整，自带区域与社媒）
+  · prospects/delta-prospects.json   —— 第一批新增的长三角 / 珠三角 16 家（字段完整，自带区域与社媒）
+  · prospects/delta-prospects-2.json —— 第二批新增的跨行业 15 家（电梯/线缆/涂布薄膜/玻璃/实验室/钢构/五金/装配式）
+  · prospects/cross-check.json       —— 原有 28 家的「交叉验证（多源对照）」文字
 
-新 schema 在原有 22 列基础上插入两列：
-  · 第 3 列「区域」—— 长三角 / 珠三角 / 长三角外的重点；用来把重点区域排到最前
-  · 第 13 列「社媒（公众号 / 抖音 / 1688 / 其他）」—— 触达路径的线上入口
+新 schema 在原有 22 列基础上插入三列：
+  · 第 3 列「区域」—— 长三角 / 珠三角 / 其他 · 省市；用来把重点区域排到最前
+  · 第 10 列「交叉验证（多源对照）」—— 同一事实至少两源对照，冲突如实写「两版」
+  · 第 14 列「社媒（公众号 / 抖音 / 1688 / 其他）」—— 触达路径的线上入口
 
-可反复执行：已经是 24 列时，会先剥掉这两列还原成基础列，再重新拼，
+可反复执行：已经是 25 列时，会先剥掉这三列还原成基础列，再重新拼，
 所以同一份数据跑多少次结果都一样，不会叠加。
 """
 import csv
@@ -23,6 +26,8 @@ import os
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CSV = os.path.join(ROOT, "prospects", "Target-Companies.csv")
 DELTA = os.path.join(ROOT, "prospects", "delta-prospects.json")
+DELTA2 = os.path.join(ROOT, "prospects", "delta-prospects-2.json")
+CROSS = os.path.join(ROOT, "prospects", "cross-check.json")
 REGIONS = os.path.join(ROOT, "prospects", "regions-social.json")
 
 # 原始 14 列（脚本认识的最老版本）
@@ -37,13 +42,17 @@ BASE22 = ["优先级", "优先级建议", "企业名称", "省市", "城市",
           "行业细分", "主营业务（名单口径）", "适配案例", "初筛分(企业侧/35)",
           "成功面", "失败面·待核实", "建议切入点", "来源", "信息可靠度", "核实日期"]
 
-# 24 列版（本版：+ 区域 + 社媒）
+# 24 列版（上一版：+ 区域 + 社媒）
 HEAD24 = (BASE22[:2] + ["区域"] + BASE22[2:11]
           + ["社媒（公众号 / 抖音 / 1688 / 其他）"] + BASE22[11:])
 
+# 25 列版（本版：+ 区域 + 交叉验证 + 社媒）
+HEAD25 = (BASE22[:2] + ["区域"] + BASE22[2:8] + ["交叉验证（多源对照）"]
+          + BASE22[8:11] + ["社媒（公众号 / 抖音 / 1688 / 其他）"] + BASE22[11:])
+
 REGION_ORDER = {"长三角": 0, "珠三角": 1}
 DELTA_FIELDS = ["优先级", "优先级建议", "区域", "企业名称", "省市", "城市", "官网",
-                "官网主营", "反向验证", "电话", "邮箱", "地址", "社媒", "触达路径",
+                "官网主营", "反向验证", "交叉验证", "电话", "邮箱", "地址", "社媒", "触达路径",
                 "行业细分", "主营业务", "适配案例", "初筛分", "成功面", "失败面·待核实",
                 "建议切入点", "来源", "信息可靠度", "核实日期"]
 
@@ -59,6 +68,17 @@ def load_base(exclude=()):
     n = len(head)
     if n == 22:
         return head, [r for r in data if r[2] not in exclude]
+    if n == 25:
+        # 剥掉「区域」(2)、「交叉验证」(9)、「社媒」(13)；触达路径里的「｜补充：」也要剥掉
+        keep = [i for i in range(25) if i not in (2, 9, 13)]
+        body = []
+        for r in data:
+            if r[3] in exclude:
+                continue
+            r = [r[i] for i in keep]
+            r[11] = r[11].split("｜补充：")[0]
+            body.append(r)
+        return [head[i] for i in keep], body
     if n == 24:
         # 剥掉「区域」(2) 与「社媒」(12)；触达路径里的「｜补充：」是上一轮拼上去的，也要剥掉
         keep = [i for i in range(24) if i not in (2, 12)]
@@ -84,16 +104,18 @@ def load_base(exclude=()):
                         r[idx["风险点（失败面·待核实）"]], r[idx["建议切入点"]],
                         "", r[idx["信息可靠度"]], ""])
         return BASE22, out
-    raise SystemExit(f"无法识别的名单列数：{n}（应为 14 / 22 / 24）")
+    raise SystemExit(f"无法识别的名单列数：{n}（应为 14 / 22 / 24 / 25）")
 
 
 def build():
     extra = json.load(open(REGIONS, encoding="utf-8"))["企业"]
-    delta = json.load(open(DELTA, encoding="utf-8"))["企业"]
+    delta = (json.load(open(DELTA, encoding="utf-8"))["企业"]
+             + json.load(open(DELTA2, encoding="utf-8"))["企业"])
+    cross = json.load(open(CROSS, encoding="utf-8"))["企业"]
     head, data = load_base(exclude={d["企业名称"] for d in delta})
     assert head == BASE22, "基础列与预期不一致，请检查 CSV 表头"
 
-    out = [HEAD24]
+    out = [HEAD25]
     for r in data:
         row = dict(zip(BASE22, r))
         name = row["企业名称"]
@@ -105,6 +127,7 @@ def build():
             path = (path + "｜补充：" + info["补注"]) if path else info["补注"]
         out.append([row["优先级"], row["优先级建议"], region, name, row["省市"], row["城市"],
                     row["官网（本轮核实）"], row["官网主营（反向验证）"], row["验证结论与修正"],
+                    cross.get(name, "（待补）"),
                     row["联系电话"], row["邮箱"], row["详细地址"], social, path,
                     row["行业细分"], row["主营业务（名单口径）"], row["适配案例"],
                     row["初筛分(企业侧/35)"], row["成功面"], row["失败面·待核实"],
@@ -119,7 +142,7 @@ def build():
     def key(row):
         region = REGION_ORDER.get(row[2], 2)
         try:
-            score = -float(row[17])
+            score = -float(row[18])
         except ValueError:
             score = 0
         return (region, score, row[3])
@@ -135,10 +158,12 @@ def build():
     n_zs = sum(1 for r in body if r[2] == "珠三角")
     print(f"最终名单：{len(body)} 家 × {len(head_row)} 列  →  {CSV}")
     print(f"  长三角 {n_yd} 家 · 珠三角 {n_zs} 家 · 其他 {len(body) - n_yd - n_zs} 家")
-    sock = sum(1 for r in body if r[12] and not r[12].startswith("（"))
+    sock = sum(1 for r in body if r[13] and not r[13].startswith("（"))
+    xchk = sum(1 for r in body if r[9] and not r[9].startswith("（"))
     print(f"  有官网链接 {sum(1 for r in body if r[6].startswith('http'))} 家 · "
-          f"有电话 {sum(1 for r in body if r[9].strip())} 家 · "
-          f"有社媒入口 {sock} 家")
+          f"有电话 {sum(1 for r in body if r[10].strip())} 家 · "
+          f"有邮箱 {sum(1 for r in body if r[11].strip())} 家 · "
+          f"有社媒入口 {sock} 家 · 有交叉验证 {xchk} 家")
 
 
 if __name__ == "__main__":
