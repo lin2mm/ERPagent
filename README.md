@@ -98,11 +98,13 @@ templates/     可直接填写的交付模板
 ├─ 06-Agent-List-and-Separation.md
 └─ 07-Customer-Qualification-Checklist.md  售前筛选打分表（一票否决 + 双侧打分 + 定级）
 
-prospects/     目标企业线索池
-├─ Target-Companies.csv     28 家 × 22 列（唯一数据源：原始列 + 官网核实与联系方式列）
-├─ Target-Companies.xlsx    Excel 版：名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
-├─ verification.json        逐家官网核实记录（官网/主营/电话/邮箱/地址/结论/来源/核实日）
-└─ 备注：tools/merge_verification.py 把 verification.json 并回 CSV，可反复执行（只重算派生列）
+prospects/     目标企业线索池（44 家：长三角 19 · 珠三角 14 · 其他 11）
+├─ Target-Companies.csv       44 家 × 24 列（唯一数据源：原始列 + 官网核实 + 联系方式 + 区域 + 社媒）
+├─ Target-Companies.xlsx      Excel 版（5 张表）：重点区域速览 / 名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
+├─ verification.json          原有 28 家的官网核实记录（官网/主营/电话/邮箱/地址/结论/来源/核实日）
+├─ delta-prospects.json       本轮新增 16 家（长三角 8 + 珠三角 8）的完整字段
+├─ regions-social.json        原有 28 家的「区域」与「社媒」两列
+└─ 备注：tools/merge_verification.py（核实结果并回）与 tools/build_targets.py（组装最终 24 列名单）都可反复执行
 
 assets/        已脱敏的插图（去企业名后入库，供构建脚本引用）
 └─ case-b/     案例 B 原方案文档的 5 张架构图（arch-01 … arch-05）
@@ -128,8 +130,9 @@ tools/         生成与校验工具
 ├─ build_pitch_b.py  构建 PITCH-02（说服版 + 面谈版 · 案例 B）
 ├─ build_pdf.py      由同一份定义产出 PDF 与逐页 PNG（pitch | short | deck）
 ├─ redact_source_images.py  把原文档插图去企业名（同色同字号替换）+ 裁白边
-├─ merge_verification.py    把官网核实结果并进名单 CSV（含优先级建议与触达路径）
-├─ build_prospect_xlsx.py   由 CSV 生成 Excel 名单（4 张表，含联系方式与修正清单）
+├─ merge_verification.py    把官网核实结果并进名单（跑完自动接着跑 build_targets）
+├─ build_targets.py         组装最终名单：加「区域」「社媒」+ 并入长三角 / 珠三角 16 家
+├─ build_prospect_xlsx.py   由 CSV 生成 Excel 名单（5 张表，首表即重点区域速览）
 ├─ build_download_page.py   生成 site/index.html —— 本地「点一下就下载」页面
 ├─ serve_downloads.py       起本地静态站点（0.0.0.0:8000，/ 自动跳下载页）
 └─ build_zip.py             把成品打成一个 zip（download/ALL-MATERIALS.zip）

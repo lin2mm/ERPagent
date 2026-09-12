@@ -19,6 +19,7 @@
 import csv
 import json
 import os
+import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CUR = os.path.join(ROOT, "prospects", "Target-Companies.csv")
@@ -94,14 +95,22 @@ BASE_IDX = [0, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17, 18, 11, 20]
 
 
 def load_base():
-    """读出名单的「原始列」——14 列旧版直接可用；22 列新版只取原始列。"""
+    """读出名单的「原始列」——14 列直接可用；22 / 24 列只取原始列。
+
+    24 列版是 build_targets.py 组装的最终版（比 22 列多「区域」与「社媒」），
+    这里先剥掉那两列再取原始列，保证两种版本都能当输入。
+    """
     rows = list(csv.reader(open(CUR, encoding="utf-8-sig")))
     head, data = rows[0], rows[1:]
     if len(head) == 14:
         return data
+    if len(head) == 24:
+        keep = [i for i in range(24) if i not in (2, 12)]
+        head = [head[i] for i in keep]
+        data = [[r[i] for i in keep] for r in data]
     if len(head) == 22:
         return [[r[i] for i in BASE_IDX] for r in data]
-    raise SystemExit(f"无法识别的名单列数：{len(head)}（应为 14 或 22）")
+    raise SystemExit(f"无法识别的名单列数：{len(head)}（应为 14 / 22 / 24）")
 
 
 def main():
@@ -139,9 +148,14 @@ def main():
         ])
     with open(CUR, "w", newline="", encoding="utf-8-sig") as f:
         csv.writer(f).writerows(out)
-    print(f"新版 CSV：{len(out)-1} 家 × {len(new_head)} 列")
+    print(f"22 列中间版 CSV：{len(out)-1} 家 × {len(new_head)} 列")
     miss = [r[2] for r in out[1:] if not r[5] or r[5].startswith("（")]
     print("未核实官网：", miss if miss else "无")
+
+    # 接着把「区域 / 社媒」与新增区域客户拼回去，产出最终 24 列名单
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_targets
+    build_targets.build()
 
 
 if __name__ == "__main__":
