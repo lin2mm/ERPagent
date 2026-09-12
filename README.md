@@ -98,6 +98,12 @@ templates/     可直接填写的交付模板
 ├─ 06-Agent-List-and-Separation.md
 └─ 07-Customer-Qualification-Checklist.md  售前筛选打分表（一票否决 + 双侧打分 + 定级）
 
+interviews/    3 份「半天走车间」访谈提纲（各有 10 节：出门前要背的数字 / 分钟级时间表 /
+├─ 01-SAICOM-Medical-Half-Day-Walkthrough.md      江苏赛康医疗（S·27·案例 B）
+├─ 02-Lidao-New-Material-Half-Day-Walkthrough.md  江苏丽岛新材（A·25·案例 A 同工艺）
+└─ 03-SpaceIn-Yaxuan-Half-Day-Walkthrough.md      上海雅轩（S·28·同城）
+               车间观察点与判据 / 按角色的问题清单 / 现场算账口径 / 红线 / 48 小时动作 / 复盘判定）
+
 prospects/     目标企业线索池（44 家：长三角 19 · 珠三角 14 · 其他 11）
 ├─ Target-Companies.csv       44 家 × 24 列（唯一数据源：原始列 + 官网核实 + 联系方式 + 区域 + 社媒）
 ├─ Target-Companies.xlsx      Excel 版（5 张表）：重点区域速览 / 名单 / 本轮核实纪要 / 评分口径 / 使用说明与获客渠道
